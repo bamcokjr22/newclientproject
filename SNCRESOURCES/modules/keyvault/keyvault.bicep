@@ -2,25 +2,35 @@ param keyVaultName string
 param location string
 param skuFamily string
 param skuName string
-param tenantId string
-param accessPolicies array
-param keyVaultAccessPolicyName string
+param keyvaultManagedIdentityObjectId string
 
-resource keyVault 'Microsoft.KeyVault/vaults@2022-07-01' = {
+resource kv 'Microsoft.KeyVault/vaults@2022-07-01' = {
   name: keyVaultName
   location: location
+  
   properties: {
+    enabledForDeployment: true
+    enabledForTemplateDeployment: true
+    enabledForDiskEncryption: true
+    tenantId: subscription().tenantId
+    accessPolicies: [
+      {
+        tenantId: subscription().tenantId
+        objectId: keyvaultManagedIdentityObjectId
+        permissions: {
+          keys: [
+            'get'
+          ]
+          secrets: [
+            'list'
+            'get'
+          ]
+        }
+      }
+    ]
     sku: {
-      family: skuFamily
       name: skuName
+      family: skuFamily
     }
-    tenantId: tenantId
-  }
-}
-
-resource keyVaultAccessPolicy 'Microsoft.KeyVault/vaults/accessPolicies@2022-07-01' = {
-  name: keyVaultAccessPolicyName
-  properties: {
-    accessPolicies: accessPolicies
   }
 }
