@@ -14,19 +14,29 @@ param workspaceName string = 'sncaisdatabricks'
 
 var managedResourceGroupName = 'databricks-rgs-${workspaceName}'
 
-resource resourceGroup 'Microsoft.Resources/resourceGroups@2022-09-01' = {
-  name: 'snckv-rg'
-  location: variables.location
-}
-
+param resourceGroups array = ['snc-dev-poc-rg' 
+'snc-dev-poc2-rg' 
+'snc-dev-poc3-rg'
+]
+// var resourceGroups = [
+//   'snc-dev-poc-rg'
+//   'snc-dev-poc2-rg'
+//   'snc-dev-poc3-rg'
+// ]
 
 // param variables object = loadJsonContent('parameter.json')
+
 param nsgs object = loadJsonContent('parameter.json')
+
+resource resourceGroup 'Microsoft.Resources/resourceGroups@2022-09-01' = [ for resourceGroupName in resourceGroups: {
+  name: resourceGroupName
+  location: variables.location
+}]
 
 var variables = loadJsonContent('parameter.json')
 
 module routeTable 'modules/network/userdefinedroute.bicep' = {
-  scope: resourceGroup
+  scope: az.resourceGroup(resourceGroups[0])
   name: 'sncroutetable'
   params: {
     location: variables.location
@@ -36,10 +46,13 @@ module routeTable 'modules/network/userdefinedroute.bicep' = {
     routeTableNextHopIPAddress: variables.routeTableNextHopIPAddress
     routeTableNextHopType: variables.routeTableNextHopType
   }
+  dependsOn: [
+    resourceGroup
+  ]
 }
 
 module virtualNetwork './modules/network/network.bicep' = {
-  scope: resourceGroup
+  scope: az.resourceGroup(resourceGroups[0])
   name: vnetName
   params: {
     location: variables.location
@@ -50,10 +63,14 @@ module virtualNetwork './modules/network/network.bicep' = {
     nsgs: nsgs
     routeTableId: routeTable.outputs.routeTableId
   }
+  dependsOn: [
+    resourceGroup
+  ]
 }
 
+// [for i in range(0,3) : if (i == 0)
 module virtualNetwork2 './modules/network/network.bicep' = {
-  scope: resourceGroup
+  scope: az.resourceGroup(resourceGroups[0])
   name: vnetName2
   params: {
     location: variables.location
@@ -64,10 +81,13 @@ module virtualNetwork2 './modules/network/network.bicep' = {
     nsgs: nsgs
     routeTableId: routeTable.outputs.routeTableId
   }
+  dependsOn: [
+    resourceGroup
+  ]
 }
 
 module vnetpeering1 'modules/network/vnetpeering.bicep' = {
-  scope: resourceGroup
+  scope: az.resourceGroup(resourceGroups[0])
   name: 'sncvnetpeering1'
   params: {
     remoteVirtualNetworkId: virtualNetwork2.outputs.vnetId
@@ -78,10 +98,13 @@ module vnetpeering1 'modules/network/vnetpeering.bicep' = {
     allowVirtualNetworkAccess: false
     useRemoteGateways: false
   }
+  dependsOn: [
+    virtualNetwork
+  ]
 }
 
 module vnetpeering2 'modules/network/vnetpeering.bicep' = {
-  scope: resourceGroup
+  scope: az.resourceGroup(resourceGroups[0])
   name: 'sncvnetpeering2'
   params: {
     remoteVirtualNetworkId: virtualNetwork.outputs.vnetId
@@ -92,10 +115,13 @@ module vnetpeering2 'modules/network/vnetpeering.bicep' = {
     allowVirtualNetworkAccess: false
     useRemoteGateways: false
   }
+  dependsOn: [
+    virtualNetwork2
+  ]
 }
 
 module storage 'modules/storageAccount/storageaccount.bicep' = {
-  scope: resourceGroup
+  scope: az.resourceGroup(resourceGroups[1])
   name: variables.storageAccountName
   params: {
     kind: variables.kind
@@ -103,22 +129,97 @@ module storage 'modules/storageAccount/storageaccount.bicep' = {
     sku: variables.sku
     storageAccountName: variables.storageAccountName
   }
+  dependsOn: [
+    resourceGroup
+  ]
 }
 
-// module appgw 'modules/network/appgateway.bicep' = {
-//   scope: resourceGroup
-//   name: 
-//   params: {
-//     appGWCapacity: 
-//     appGWFrontendIPConfigurationName: 
-//     appGWName: 
-//     appGWSKU: 
-//     appGWTier: 
-//     location: 
-//     publicIPAllocationMethod: 
-//     publicIPName: 
-//   }
-// }
+module appGateway 'modules/network/appgateway.bicep' = {
+  scope: az.resourceGroup(resourceGroups[2])
+  name: 'sncappgw'
+  params: {
+    location: variables.location
+    applicationGatewayName: 'SNCApplicationGateway'
+    sku: 'WAF_v2'
+    tier: 'WAF_v2'
+    zoneRedundant: false
+    enableWebApplicationFirewall: false
+    firewallPolicyName: 'MyFirewallPolicyName'
+    publicIpAddressName: 'sncappgwpip'
+    vNetResourceGroup: resourceGroup[0].name
+    vNetName: virtualNetwork.name
+    subnetName: variables.subnets[2].name
+    frontEndPorts: [
+      {
+        name: 'port_80'
+        port: 80
+      }
+    ]
+    httpListeners: [
+      {
+        name: 'MyHttpListener'
+        protocol: 'Http'        
+        frontEndPort: 'port_80'
+      }
+    ]
+    backendAddressPools: [
+      {
+        name: 'MyBackendPool'
+        backendAddresses: [
+          {
+            ipAddress: '10.1.2.3'
+          }
+        ]
+      }
+    ]
+    backendHttpSettings: [
+      {
+        name: 'MyBackendHttpSetting'
+        port: 80
+        protocol: 'Http'
+        cookieBasedAffinity: 'Enabled'
+        affinityCookieName: 'MyCookieAffinityName'
+        requestTimeout: 300
+        connectionDraining: {
+          drainTimeoutInSec: 60
+          enabled: true
+        }
+      }
+    ]
+    rules: [
+      {
+        name: 'MyRuleName'
+        ruleType: 'Basic'
+        listener: 'MyHttpListener'
+        backendPool: 'MyBackendPool'
+        backendHttpSettings: 'MyBackendHttpSetting'
+      }
+    ]
+    // enableDeleteLock: true
+    // enableDiagnostics: true
+    // logAnalyticsWorkspaceId: ''
+    // diagnosticStorageAccountId: ''
+  }
+  dependsOn: [
+    virtualNetwork
+    virtualNetwork2
+  ]
+}
+
+module privateEndpoint 'modules/network/privateEndpoint.bicep' = {
+  scope: az.resourceGroup(resourceGroups[2])
+  name: 'sncpe'
+  params: {
+    privateEndpointName: 'sncpe' 
+    privateLinkServiceName: 'sncpls'
+    subnetName: variables.subnets[0].name
+    vNetName: vnetName
+    vNetResourceGroup: resourceGroups[0]
+    location: variables.location
+    privateLinkServiceId: storage.outputs.storageAccountId
+    groupId: 'blob'
+  }
+}
 // module nsg 'modules/network/networksecuritygroups.bicep' = {
 //   scope: resourceGroup
 //   name: nsgName

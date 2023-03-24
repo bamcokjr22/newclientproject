@@ -40,10 +40,10 @@ resource network 'Microsoft.Network/virtualNetworks@2022-07-01' = {
       name: subnet.name
       properties: {
         addressPrefix: subnet.subnetPrefix
-        networkSecurityGroup: {
+        networkSecurityGroup: subnet.name == 'appgwSubnet' ? null : {
           id: networkSecurityGroup[i].id
         }
-        routeTable: {
+        routeTable: subnet.name == 'appgwSubnet' ? null : {
           id: routeTableId
         }
       }

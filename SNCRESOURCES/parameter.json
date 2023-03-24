@@ -1,5 +1,5 @@
 {
-    "storageAccountName": "sncstora",
+    "storageAccountName": "sncstora1",
     "sku": "Standard_LRS",
     "kind": "StorageV2",
     "publicIPName": "snstestpip",
@@ -73,22 +73,6 @@
         "name": "nsg2",
         "rules": [{
             "name": "rule3",
-            "properties": {
-                "protocol": "Tcp",
-                "sourcePortRange": "*",
-                "destinationPortRange": "22",
-                "sourceAddressPrefix": "VirtualNetwork",
-                "destinationAddressPrefix": "*",
-                "access": "Allow",
-                "priority": 100,
-                "direction": "Inbound"
-            }
-        }]
-    },
-    {
-        "name": "nsg3",
-        "rules": [{
-            "name": "rule4",
             "properties": {
                 "protocol": "Tcp",
                 "sourcePortRange": "*",
