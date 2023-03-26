@@ -86,39 +86,79 @@ module virtualNetwork2 './modules/network/network.bicep' = {
   ]
 }
 
-module vnetpeering1 'modules/network/vnetpeering.bicep' = {
-  scope: az.resourceGroup(resourceGroups[0])
-  name: 'sncvnetpeering1'
-  params: {
-    remoteVirtualNetworkId: virtualNetwork2.outputs.vnetId
-    vnetName: virtualNetwork.outputs.vnetName
-    remoteVnetName: virtualNetwork2.outputs.vnetName
-    allowForwardedTraffic: false
-    allowGatewayTransit: false
-    allowVirtualNetworkAccess: false
-    useRemoteGateways: false
-  }
-  dependsOn: [
-    virtualNetwork
-  ]
+// module vnetpeering1 'modules/network/vnetpeering.bicep' = {
+//   scope: az.resourceGroup(resourceGroups[0])
+//   name: 'sncvnetpeering1'
+//   params: {
+//     remoteVirtualNetworkId: virtualNetwork2.outputs.vnetId
+//     vnetName: virtualNetwork.outputs.vnetName
+//     remoteVnetName: virtualNetwork2.outputs.vnetName
+//     allowForwardedTraffic: false
+//     allowGatewayTransit: false
+//     allowVirtualNetworkAccess: false
+//     useRemoteGateways: false
+//   }
+//   dependsOn: [
+//     virtualNetwork
+//   ]
+// }
+
+// module vnetpeering2 'modules/network/vnetpeering.bicep' = {
+//   scope: az.resourceGroup(resourceGroups[0])
+//   name: 'sncvnetpeering2'
+//   params: {
+//     remoteVirtualNetworkId: virtualNetwork.outputs.vnetId
+//     vnetName: virtualNetwork2.outputs.vnetName
+//     remoteVnetName: virtualNetwork.outputs.vnetName
+//     allowForwardedTraffic: false
+//     allowGatewayTransit: false
+//     allowVirtualNetworkAccess: false
+//     useRemoteGateways: false
+//   }
+//   dependsOn: [
+//     virtualNetwork2
+//   ]
+// }
+
+resource vhub 'Microsoft.Network/virtualHubs@2022-09-01' existing = {
+  scope: az.resourceGroup(resourceGroups[2])
+  name: 'vhub'
 }
 
-module vnetpeering2 'modules/network/vnetpeering.bicep' = {
-  scope: az.resourceGroup(resourceGroups[0])
-  name: 'sncvnetpeering2'
+module vnetpeering3 'modules/network/vnetpeering.bicep' = {
+  scope: az.resourceGroup(resourceGroups[2])
+  name: 'snchubcon'
   params: {
-    remoteVirtualNetworkId: virtualNetwork.outputs.vnetId
-    vnetName: virtualNetwork2.outputs.vnetName
-    remoteVnetName: virtualNetwork.outputs.vnetName
-    allowForwardedTraffic: false
-    allowGatewayTransit: false
-    allowVirtualNetworkAccess: false
-    useRemoteGateways: false
+    peeringName: 'snchubcon'
+    vnetId: virtualNetwork.outputs.vnetId
+    vhubName: vhub.name
   }
-  dependsOn: [
-    virtualNetwork2
-  ]
 }
+
+// module privateDNS 'modules/network/privateDNSZone.bicep' = {
+//   scope: az.resourceGroup(resourceGroups[0])
+//   name: 'sncdns'
+//   params: {
+//     location: 'global'
+//     privateDNSZoneName: 'sncdns.com'
+//   }
+// }
+// module vnetpeering3 'modules/network/vnetpeering.bicep' = {
+//   scope: az.resourceGroup(resourceGroups[0])
+//   name: 'sncvnetpeering3'
+//   params: {
+//     remoteVirtualNetworkId: resourceId(subscription().subscriptionId, resourceGroups[2], 'Microsoft.Network/virtualHubs', vhub.name)
+//     vnetName: virtualNetwork.outputs.vnetName
+//     remoteVnetName: virtualNetwork.name
+//     allowForwardedTraffic: true
+//     allowGatewayTransit: true
+//     allowVirtualNetworkAccess: true
+//     useRemoteGateways: true
+//   }
+//   dependsOn: [
+//     virtualNetwork
+//   ]
+// }
 
 module storage 'modules/storageAccount/storageaccount.bicep' = {
   scope: az.resourceGroup(resourceGroups[1])
@@ -218,8 +258,11 @@ module privateEndpoint 'modules/network/privateEndpoint.bicep' = {
     location: variables.location
     privateLinkServiceId: storage.outputs.storageAccountId
     groupId: 'blob'
+    privateDNSZoneName: 'sncais.local'
+    privateEndpointDnsGroupName: 'sncpe'
   }
 }
+
 // module nsg 'modules/network/networksecuritygroups.bicep' = {
 //   scope: resourceGroup
 //   name: nsgName
