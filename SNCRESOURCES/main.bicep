@@ -14,7 +14,7 @@ param workspaceName string = 'sncaisdatabricks'
 
 var managedResourceGroupName = 'databricks-rgs-${workspaceName}'
 
-param createStorage bool = false
+param createStorage bool = true
 
 param resourceGroups array = ['snc-dev-poc-rg' 
 'snc-dev-poc2-rg' 
@@ -176,7 +176,7 @@ module storage 'modules/storageAccount/storageaccount.bicep' = if (createStorage
   ]
 }
 
-module privateEndpoint 'modules/network/privateEndpoint.bicep' = if (createStorage) {
+module storageAccountPrivateEndpoint 'modules/network/privateEndpoint.bicep' = if (createStorage) {
   scope: az.resourceGroup(resourceGroups[2])
   name: 'sncpe'
   params: {
@@ -188,7 +188,7 @@ module privateEndpoint 'modules/network/privateEndpoint.bicep' = if (createStora
     location: variables.location
     privateLinkServiceId: storage.outputs.storageAccountId
     groupId: 'blob'
-    privateDNSZoneName: 'sncais.local'
+    privateDNSZoneName: 'privatelink.blob.core.windows.net'
     privateEndpointDnsGroupName: 'sncpe'
   }
 }
@@ -214,20 +214,20 @@ module keyvault 'modules/keyvault/keyvault.bicep' = {
   }
 }
 
-module apim 'modules/apim.bicep' = {
-  scope: az.resourceGroup(resourceGroups[1])
-  name: 'sncaisapim'
-  params: {
-    apimName: 'sncaisapim'
-    apimPublisherEmail: 'emmachi72.ec@gmail.com'
-    apimPublisherName: 'Uchenna Chibueze'
-    apimSKUCapacity: 1
-    apimSKUName: 'Developer'
-    apimVirtualNetworkType: 'Internal' 
-    location: variables.location
-    subnetId: resourceId(subscription().subscriptionId, resourceGroups[0], 'Microsoft.Network/virtualNetworks/subnets', vnetName, variables.subnets[1].name)
-  }
-}
+// module apim 'modules/apim.bicep' = {
+//   scope: az.resourceGroup(resourceGroups[1])
+//   name: 'sncaisapim'
+//   params: {
+//     apimName: 'sncaisapim'
+//     apimPublisherEmail: 'emmachi72.ec@gmail.com'
+//     apimPublisherName: 'Uchenna Chibueze'
+//     apimSKUCapacity: 1
+//     apimSKUName: 'Developer'
+//     apimVirtualNetworkType: 'Internal' 
+//     location: variables.location
+//     subnetId: resourceId(subscription().subscriptionId, resourceGroups[0], 'Microsoft.Network/virtualNetworks/subnets', vnetName, variables.subnets[1].name)
+//   }
+// }
 
 module appGateway 'modules/network/appgateway.bicep' = {
   scope: az.resourceGroup(resourceGroups[2])
