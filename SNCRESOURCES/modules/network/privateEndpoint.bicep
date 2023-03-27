@@ -19,11 +19,13 @@ param privateLinkServiceId string
 param groupId string
 
 @description('Location')
-param location string = resourceGroup().location
+param location string
 
 param privateEndpointDnsGroupName string
 
-param privateDNSZoneName string
+// param privateDNSZoneName string
+
+param privateDNSZoneId string
 
 // resource privateLinkService 'Microsoft.Network/privateLinkServices@2022-09-01' = {
 //   name: privateLinkServiceName
@@ -45,15 +47,6 @@ param privateDNSZoneName string
 //   }
 // }
 
-// resource privateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' = {
-//   name: privateDnsZoneName
-//   location: 'global'
-//   properties: {}
-//   dependsOn: [
-//     vnet
-//   ]
-// }
-
 // resource privateDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
 //   parent: privateDnsZone
 //   name: '${privateDnsZoneName}-link'
@@ -65,28 +58,6 @@ param privateDNSZoneName string
 //     }
 //   }
 // }
-
-resource privateDNSZone 'Microsoft.Network/privateDnsZones@2020-06-01' = {
-  name: privateDNSZoneName
-  location: 'global'
-}
-
-resource aRecord 'Microsoft.Network/privateDnsZones/A@2020-06-01' = {
-  name: 'webapp'
-  parent: privateDNSZone
-  properties: {
-    ttl: 3600
-    aRecords: [
-      {
-        ipv4Address: '10.0.0.1'
-      }
-    ]
-    // cnameRecord: {
-    //   cname: 'database'
-    // }
-  }
-}
-
 
 resource privateEndpoint 'Microsoft.Network/privateEndpoints@2022-01-01' = {
   name: privateEndpointName
@@ -117,7 +88,7 @@ resource privateEndpointDnsGroup 'Microsoft.Network/privateEndpoints/privateDnsZ
       {
         name: 'config1'
         properties: {
-          privateDnsZoneId: privateDNSZone.id
+          privateDnsZoneId: privateDNSZoneId
         }
       }
     ]

@@ -162,36 +162,46 @@ module vnetpeering3 'modules/network/vnetpeering.bicep' = {
 //   ]
 // }
 
-module storage 'modules/storageAccount/storageaccount.bicep' = if (createStorage ) {
+module storage 'modules/storageAccount/storageaccount.bicep' = [for (storageAccount, i) in variables.storageAccounts: if (createStorage) {
   scope: az.resourceGroup(resourceGroups[1])
-  name: variables.storageAccountName
+  name: variables.storageAccounts[i].name
   params: {
-    kind: variables.kind
     location: variables.location
-    sku: variables.sku
-    storageAccountName: variables.storageAccountName
+    kind: variables.storageAccounts[i].kind
+    sku: variables.storageAccounts[i].sku
+    storageAccountName: variables.storageAccounts[i].name
   }
-  dependsOn: [
-    resourceGroup
-  ]
+}]
+
+module privateDNSZone 'modules/network/privateDNSZone.bicep' = {
+  scope: az.resourceGroup(resourceGroups[2])
+  name: variables.blobDNS
+  params: {
+    location: 'global'
+    privateDNSZoneName: variables.blobDNS
+  }
 }
 
-module storageAccountPrivateEndpoint 'modules/network/privateEndpoint.bicep' = if (createStorage) {
+module storageAccountPrivateEndpoint 'modules/network/privateEndpoint.bicep' = [for (storageAcount, i) in variables.storageAccounts: {
   scope: az.resourceGroup(resourceGroups[2])
-  name: 'sncpe'
+  name: '${variables.storageAccounts[i].name}-PE'
   params: {
-    privateEndpointName: 'sncpe' 
+    privateEndpointName: '${variables.storageAccounts[i].name}-PE'
     privateLinkServiceName: 'sncpls'
     subnetName: variables.subnets[0].name
     vNetName: vnetName
     vNetResourceGroup: resourceGroups[0]
     location: variables.location
-    privateLinkServiceId: storage.outputs.storageAccountId
+    privateLinkServiceId: storage[i].outputs.storageAccountId
     groupId: 'blob'
-    privateDNSZoneName: 'privatelink.blob.core.windows.net'
-    privateEndpointDnsGroupName: 'sncpe'
+    // privateDNSZoneName: 'privatelink.blob.core.windows.net'
+    privateDNSZoneId: privateDNSZone.outputs.dnsZoneId
+    privateEndpointDnsGroupName: '${variables.storageAccounts[i].name}-PE'
   }
-}
+  dependsOn: [
+    storage
+  ]
+}]
 
 module managedIdentity 'modules/identity/identity.bicep' = {
   scope: az.resourceGroup(resourceGroups[2])

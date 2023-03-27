@@ -6,18 +6,21 @@ resource privateDNSZone 'Microsoft.Network/privateDnsZones@2020-06-01' = {
   location: location
 }
 
-resource aRecord 'Microsoft.Network/privateDnsZones/A@2020-06-01' = {
-  name: '@'
-  parent: privateDNSZone
-  properties: {
-    ttl: 3600
-    aRecords: [
-      {
-        ipv4Address: '10.0.0.1'
-      }
-    ]
-    cnameRecord: {
-      cname: 'database'
-    }
-  }
-}
+// resource aRecord 'Microsoft.Network/privateDnsZones/A@2020-06-01' = {
+//   name: '@'
+//   parent: privateDNSZone
+//   properties: {
+//     ttl: 3600
+//     aRecords: [
+//       {
+//         ipv4Address: '10.0.0.1'
+//       }
+//     ]
+//     // cnameRecord: {
+//     //   cname: 'database'
+//     // }
+//   }
+// }
+
+
+output dnsZoneId string = privateDNSZone.id

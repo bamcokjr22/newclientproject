@@ -1,7 +1,18 @@
 {
-    "storageAccountName": "sncstora1",
-    "sku": "Standard_LRS",
-    "kind": "StorageV2",
+    
+    "blobDNS": "privatelink.blob.core.windows.net",
+    "storageAccounts": [
+        {
+            "name": "sncstora1",
+            "sku": "Standard_LRS",
+            "kind": "StorageV2"
+        },
+        {
+            "name": "sncstora2",
+            "sku": "Standard_LRS",
+            "kind": "StorageV2"
+        }
+    ],
     "publicIPName": "snstestpip",
     "publicIPAllocationMethod": "Static",
     "appGWName": "snctestappgw",

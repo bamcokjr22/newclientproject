@@ -1,4 +1,3 @@
-@secure()
 param storageAccountName string
 param location string
 param kind string
