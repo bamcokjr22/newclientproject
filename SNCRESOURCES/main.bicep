@@ -177,12 +177,13 @@ module privateDNSZone 'modules/network/privateDNSZone.bicep' = {
   scope: az.resourceGroup(resourceGroups[2])
   name: variables.blobDNS
   params: {
-    location: 'global'
     privateDNSZoneName: variables.blobDNS
+    registrationEnabled: true
+    vnetId: virtualNetwork.outputs.vnetId
   }
 }
 
-module storageAccountPrivateEndpoint 'modules/network/privateEndpoint.bicep' = [for (storageAcount, i) in variables.storageAccounts: {
+module storageAccountPrivateEndpoint 'modules/network/privateEndpoint.bicep' = [for (storageAcount, i) in variables.storageAccounts: if (createStorage) {
   scope: az.resourceGroup(resourceGroups[2])
   name: '${variables.storageAccounts[i].name}-PE'
   params: {
