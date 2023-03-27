@@ -8,11 +8,13 @@ param vnetName2 string = 'sncvnet2'
 param vnetAddressPrefix string = '10.0.0.0/16'
 param vnetAddressPrefix2 string = '192.168.0.0/16'
 param keyvaultSKUName string = 'standard'
-param keyvaultName string = 'snckeyva123456'
+param keyvaultName string = 'sncaiskv1234567'
 param managedIdentityName string = 'ucmanagedid'
 param workspaceName string = 'sncaisdatabricks'
 
 var managedResourceGroupName = 'databricks-rgs-${workspaceName}'
+
+param createStorage bool = false
 
 param resourceGroups array = ['snc-dev-poc-rg' 
 'snc-dev-poc2-rg' 
@@ -160,7 +162,7 @@ module vnetpeering3 'modules/network/vnetpeering.bicep' = {
 //   ]
 // }
 
-module storage 'modules/storageAccount/storageaccount.bicep' = {
+module storage 'modules/storageAccount/storageaccount.bicep' = if (createStorage ) {
   scope: az.resourceGroup(resourceGroups[1])
   name: variables.storageAccountName
   params: {
@@ -172,6 +174,59 @@ module storage 'modules/storageAccount/storageaccount.bicep' = {
   dependsOn: [
     resourceGroup
   ]
+}
+
+module privateEndpoint 'modules/network/privateEndpoint.bicep' = if (createStorage) {
+  scope: az.resourceGroup(resourceGroups[2])
+  name: 'sncpe'
+  params: {
+    privateEndpointName: 'sncpe' 
+    privateLinkServiceName: 'sncpls'
+    subnetName: variables.subnets[0].name
+    vNetName: vnetName
+    vNetResourceGroup: resourceGroups[0]
+    location: variables.location
+    privateLinkServiceId: storage.outputs.storageAccountId
+    groupId: 'blob'
+    privateDNSZoneName: 'sncais.local'
+    privateEndpointDnsGroupName: 'sncpe'
+  }
+}
+
+module managedIdentity 'modules/identity/identity.bicep' = {
+  scope: az.resourceGroup(resourceGroups[2])
+  name: managedIdentityName
+  params: {
+    location: variables.location
+    managedIdentityName: managedIdentityName 
+  }
+}
+
+module keyvault 'modules/keyvault/keyvault.bicep' = {
+  scope: az.resourceGroup(resourceGroups[1])
+  name: 'sncaiskv1234567'
+  params: {
+    keyvaultManagedIdentityObjectId: managedIdentity.outputs.objectId
+    keyVaultName: keyvaultName
+    location: variables.location
+    skuFamily: 'A'
+    skuName: keyvaultSKUName
+  }
+}
+
+module apim 'modules/apim.bicep' = {
+  scope: az.resourceGroup(resourceGroups[1])
+  name: 'sncaisapim'
+  params: {
+    apimName: 'sncaisapim'
+    apimPublisherEmail: 'emmachi72.ec@gmail.com'
+    apimPublisherName: 'Uchenna Chibueze'
+    apimSKUCapacity: 1
+    apimSKUName: 'Developer'
+    apimVirtualNetworkType: 'Internal' 
+    location: variables.location
+    subnetId: resourceId(subscription().subscriptionId, resourceGroups[0], 'Microsoft.Network/virtualNetworks/subnets', vnetName, variables.subnets[1].name)
+  }
 }
 
 module appGateway 'modules/network/appgateway.bicep' = {
@@ -245,53 +300,6 @@ module appGateway 'modules/network/appgateway.bicep' = {
     virtualNetwork2
   ]
 }
-
-module privateEndpoint 'modules/network/privateEndpoint.bicep' = {
-  scope: az.resourceGroup(resourceGroups[2])
-  name: 'sncpe'
-  params: {
-    privateEndpointName: 'sncpe' 
-    privateLinkServiceName: 'sncpls'
-    subnetName: variables.subnets[0].name
-    vNetName: vnetName
-    vNetResourceGroup: resourceGroups[0]
-    location: variables.location
-    privateLinkServiceId: storage.outputs.storageAccountId
-    groupId: 'blob'
-    privateDNSZoneName: 'sncais.local'
-    privateEndpointDnsGroupName: 'sncpe'
-  }
-}
-
-// module nsg 'modules/network/networksecuritygroups.bicep' = {
-//   scope: resourceGroup
-//   name: nsgName
-//   params: {
-//     location: location
-//     nsgName: nsgName
-//   }
-// }
-
-// module managedIdentity 'modules/identity/identity.bicep' = {
-//   scope: resourceGroup
-//   name: managedIdentityName
-//   params: {
-//     location: location
-//     managedIdentityName: managedIdentityName 
-//   }
-// }
-
-// module keyvault 'modules/keyvault/keyvault.bicep' = {
-//   scope: resourceGroup
-//   name: 'snckv123456'
-//   params: {
-//     keyvaultManagedIdentityObjectId: managedIdentity.outputs.objectId
-//     keyVaultName: keyvaultName
-//     location: location
-//     skuFamily: 'A'
-//     skuName: keyvaultSKUName
-//   }
-// }
 
 // module databricks 'modules/databrick/databrick.bicep' = {
 //   scope: resourceGroup
