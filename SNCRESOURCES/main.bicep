@@ -122,20 +122,20 @@ module virtualNetwork2 './modules/network/network.bicep' = {
 //   ]
 // }
 
-resource vhub 'Microsoft.Network/virtualHubs@2022-09-01' existing = {
-  scope: az.resourceGroup(resourceGroups[2])
-  name: 'vhub'
-}
+// resource vhub 'Microsoft.Network/virtualHubs@2022-09-01' existing = {
+//   scope: az.resourceGroup(resourceGroups[2])
+//   name: reference(subscription().subscriptionId, resourceGroups[0], '')
+// }
 
-module vnetpeering3 'modules/network/vnetpeering.bicep' = {
-  scope: az.resourceGroup(resourceGroups[2])
-  name: 'snchubcon'
-  params: {
-    peeringName: 'snchubcon'
-    vnetId: virtualNetwork.outputs.vnetId
-    vhubName: vhub.name
-  }
-}
+// module vnetpeering3 'modules/network/vnetpeering.bicep' = {
+//   scope: az.resourceGroup(resourceGroups[2])
+//   name: 'snchubcon'
+//   params: {
+//     peeringName: 'snchubcon'
+//     vnetId: virtualNetwork.outputs.vnetId
+//     vhubName: vhub.name
+//   }
+// }
 
 // module privateDNS 'modules/network/privateDNSZone.bicep' = {
 //   scope: az.resourceGroup(resourceGroups[0])
@@ -178,7 +178,7 @@ module privateDNSZone 'modules/network/privateDNSZone.bicep' = {
   name: variables.blobDNS
   params: {
     privateDNSZoneName: variables.blobDNS
-    registrationEnabled: true
+    registrationEnabled: false
     vnetId: virtualNetwork.outputs.vnetId
   }
 }
@@ -213,104 +213,144 @@ module managedIdentity 'modules/identity/identity.bicep' = {
   }
 }
 
-module keyvault 'modules/keyvault/keyvault.bicep' = {
-  scope: az.resourceGroup(resourceGroups[1])
-  name: 'sncaiskv1234567'
-  params: {
-    keyvaultManagedIdentityObjectId: managedIdentity.outputs.objectId
-    keyVaultName: keyvaultName
-    location: variables.location
-    skuFamily: 'A'
-    skuName: keyvaultSKUName
-  }
-}
-
-// module apim 'modules/apim.bicep' = {
+// module keyvault 'modules/keyvault/keyvault.bicep' = {
 //   scope: az.resourceGroup(resourceGroups[1])
-//   name: 'sncaisapim'
+//   name: 'sncaiskv1234567'
 //   params: {
-//     apimName: 'sncaisapim'
-//     apimPublisherEmail: 'emmachi72.ec@gmail.com'
-//     apimPublisherName: 'Uchenna Chibueze'
-//     apimSKUCapacity: 1
-//     apimSKUName: 'Developer'
-//     apimVirtualNetworkType: 'Internal' 
+//     keyvaultManagedIdentityObjectId: managedIdentity.outputs.objectId
+//     keyVaultName: keyvaultName
 //     location: variables.location
-//     subnetId: resourceId(subscription().subscriptionId, resourceGroups[0], 'Microsoft.Network/virtualNetworks/subnets', vnetName, variables.subnets[1].name)
+//     skuFamily: 'A'
+//     skuName: keyvaultSKUName
 //   }
 // }
 
-module appGateway 'modules/network/appgateway.bicep' = {
-  scope: az.resourceGroup(resourceGroups[2])
-  name: 'sncappgw'
+module apim 'modules/apim.bicep' = {
+  scope: az.resourceGroup(resourceGroups[1])
+  name: 'sncaisapim'
   params: {
+    apimName: 'sncaisapim'
+    apimPublisherEmail: 'emmachi72.ec@gmail.com'
+    apimPublisherName: 'Uchenna Chibueze'
+    apimSKUCapacity: 1
+    apimSKUName: 'Developer'
+    apimVirtualNetworkType: 'Internal' 
     location: variables.location
-    applicationGatewayName: 'SNCApplicationGateway'
-    sku: 'WAF_v2'
-    tier: 'WAF_v2'
-    zoneRedundant: false
-    enableWebApplicationFirewall: false
-    firewallPolicyName: 'MyFirewallPolicyName'
-    publicIpAddressName: 'sncappgwpip'
-    vNetResourceGroup: resourceGroup[0].name
-    vNetName: virtualNetwork.name
-    subnetName: variables.subnets[2].name
-    frontEndPorts: [
-      {
-        name: 'port_80'
-        port: 80
-      }
-    ]
-    httpListeners: [
-      {
-        name: 'MyHttpListener'
-        protocol: 'Http'        
-        frontEndPort: 'port_80'
-      }
-    ]
-    backendAddressPools: [
-      {
-        name: 'MyBackendPool'
-        backendAddresses: [
-          {
-            ipAddress: '10.1.2.3'
-          }
-        ]
-      }
-    ]
-    backendHttpSettings: [
-      {
-        name: 'MyBackendHttpSetting'
-        port: 80
-        protocol: 'Http'
-        cookieBasedAffinity: 'Enabled'
-        affinityCookieName: 'MyCookieAffinityName'
-        requestTimeout: 300
-        connectionDraining: {
-          drainTimeoutInSec: 60
-          enabled: true
-        }
-      }
-    ]
-    rules: [
-      {
-        name: 'MyRuleName'
-        ruleType: 'Basic'
-        listener: 'MyHttpListener'
-        backendPool: 'MyBackendPool'
-        backendHttpSettings: 'MyBackendHttpSetting'
-      }
-    ]
-    // enableDeleteLock: true
-    // enableDiagnostics: true
-    // logAnalyticsWorkspaceId: ''
-    // diagnosticStorageAccountId: ''
+    subnetId: resourceId(subscription().subscriptionId, resourceGroups[0], 'Microsoft.Network/virtualNetworks/subnets', vnetName, variables.subnets[1].name)
+    apimVirtualNetworkTypeEnabled: false
+    // privateEndpointId: resourceId('Microsoft.Network/privateEndpoints', apimAccountPrivateEndpoint.name)
   }
   dependsOn: [
-    virtualNetwork
-    virtualNetwork2
+    resourceGroup
   ]
 }
+
+module apimAccountPrivateEndpoint 'modules/network/privateEndpoint.bicep' = {
+  scope: az.resourceGroup(resourceGroups[2])
+  name: 'apim-PE'
+  params: {
+    privateEndpointName: 'apim-PE'
+    privateLinkServiceName: 'sncpls'
+    subnetName: variables.subnets[0].name
+    vNetName: vnetName
+    vNetResourceGroup: resourceGroups[0]
+    location: variables.location
+    privateLinkServiceId: apim.outputs.apimId
+    groupId: 'Gateway'
+    // privateDNSZoneName: 'privatelink.blob.core.windows.net'
+    privateDNSZoneId: apimPrivateDNSZone.outputs.dnsZoneId
+    privateEndpointDnsGroupName: 'apim-PE'
+  }
+  dependsOn: [
+    resourceGroup
+  ]
+}
+
+module apimPrivateDNSZone 'modules/network/privateDNSZone.bicep' = {
+  scope: az.resourceGroup(resourceGroups[2])
+  name: variables.Gateway
+  params: {
+    privateDNSZoneName: variables.Gateway
+    registrationEnabled: false
+    vnetId: virtualNetwork.outputs.vnetId
+  }
+  dependsOn: [
+    resourceGroup
+  ]
+}
+
+
+// module appGateway 'modules/network/appgateway.bicep' = {
+//   scope: az.resourceGroup(resourceGroups[2])
+//   name: 'sncappgw'
+//   params: {
+//     location: variables.location
+//     applicationGatewayName: 'SNCApplicationGateway'
+//     sku: 'WAF_v2'
+//     tier: 'WAF_v2'
+//     zoneRedundant: false
+//     enableWebApplicationFirewall: false
+//     firewallPolicyName: 'MyFirewallPolicyName'
+//     publicIpAddressName: 'sncappgwpip'
+//     vNetResourceGroup: resourceGroup[0].name
+//     vNetName: virtualNetwork.name
+//     subnetName: variables.subnets[2].name
+//     frontEndPorts: [
+//       {
+//         name: 'port_80'
+//         port: 80
+//       }
+//     ]
+//     httpListeners: [
+//       {
+//         name: 'MyHttpListener'
+//         protocol: 'Http'        
+//         frontEndPort: 'port_80'
+//       }
+//     ]
+//     backendAddressPools: [
+//       {
+//         name: 'MyBackendPool'
+//         backendAddresses: [
+//           {
+//             ipAddress: '10.1.2.3'
+//           }
+//         ]
+//       }
+//     ]
+//     backendHttpSettings: [
+//       {
+//         name: 'MyBackendHttpSetting'
+//         port: 80
+//         protocol: 'Http'
+//         cookieBasedAffinity: 'Enabled'
+//         affinityCookieName: 'MyCookieAffinityName'
+//         requestTimeout: 300
+//         connectionDraining: {
+//           drainTimeoutInSec: 60
+//           enabled: true
+//         }
+//       }
+//     ]
+//     rules: [
+//       {
+//         name: 'MyRuleName'
+//         ruleType: 'Basic'
+//         listener: 'MyHttpListener'
+//         backendPool: 'MyBackendPool'
+//         backendHttpSettings: 'MyBackendHttpSetting'
+//       }
+//     ]
+//     // enableDeleteLock: true
+//     // enableDiagnostics: true
+//     // logAnalyticsWorkspaceId: ''
+//     // diagnosticStorageAccountId: ''
+//   }
+//   dependsOn: [
+//     virtualNetwork
+//     virtualNetwork2
+//   ]
+// }
 
 // module databricks 'modules/databrick/databrick.bicep' = {
 //   scope: resourceGroup

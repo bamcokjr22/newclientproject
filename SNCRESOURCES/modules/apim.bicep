@@ -7,6 +7,7 @@ param apimPublisherEmail string
 param apimPublisherName string
 param subnetId string
 param apimVirtualNetworkTypeEnabled bool
+// param privateEndpointId string
 
 resource apiManagementInstance 'Microsoft.ApiManagement/service@2022-08-01' = {
   name: apimName
@@ -16,7 +17,7 @@ resource apiManagementInstance 'Microsoft.ApiManagement/service@2022-08-01' = {
     name: apimSKUName
   }
   properties:{
-    virtualNetworkConfiguration: {
+    virtualNetworkConfiguration: (apimVirtualNetworkTypeEnabled == false) ? null : {
       subnetResourceId: subnetId
     }
     virtualNetworkType: (apimVirtualNetworkTypeEnabled) ? apimVirtualNetworkType : 'None'
@@ -24,21 +25,22 @@ resource apiManagementInstance 'Microsoft.ApiManagement/service@2022-08-01' = {
     publisherName: apimPublisherName
     // privateEndpointConnections: [
     //   {
-    //     id: 
-    //     name: ''
+    //     id: privateEndpointId
+    //     name: 'apimpe'
     //     properties: {
-    //       privateEndpoint: {
-            
-    //       }
+    //       // privateEndpoint: {}
     //       privateLinkServiceConnectionState: {
-    //         actionsRequired: ''
-    //         description: ''
-    //         status: ''
+    //         // actionsRequired: ''
+    //         description: 'Approved by automated script'
+    //         status: 'Approved'
     //       }
     //     }
-    //     type: ''
+    //     // type: ''
     //   }
     // ]
     
   }
 }
+
+
+output apimId string = apiManagementInstance.id

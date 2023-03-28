@@ -1,6 +1,12 @@
 {
     
     "blobDNS": "privatelink.blob.core.windows.net",
+    "tableDNS": "privatelink.blob.core.windows.net",
+    "queueDNS": "privatelink.blob.core.windows.net",
+    "file": "privatelink.file.core.windows.net",
+    "web": "privatelink.web.core.windows.net",
+    "dfs": "privatelink.dfs.core.windows.net",
+    "Gateway": "privatelink.azure-api.net",
     "storageAccounts": [
         {
             "name": "sncstora1",
@@ -92,6 +98,19 @@
                 "destinationAddressPrefix": "*",
                 "access": "Allow",
                 "priority": 100,
+                "direction": "Inbound"
+            }
+        },
+        {
+            "name": "rule4",
+            "properties": {
+                "protocol": "Tcp",
+                "sourcePortRange": "*",
+                "destinationPortRange": "3443",
+                "sourceAddressPrefix": "VirtualNetwork",
+                "destinationAddressPrefix": "*",
+                "access": "Allow",
+                "priority": 200,
                 "direction": "Inbound"
             }
         }]
