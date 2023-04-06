@@ -1,14 +1,7 @@
 targetScope = 'subscription'
 
 param vnetName string = 'sncvnet'
-param vnetName2 string = 'sncvnet2'
-// param location string = 'CentralUS'
-// param subnetName array = ['sncsubnet', 'apimSubnet']
-// param subnetPrefix array = ['10.0.0.0/24', '10.0.1.0/24']
 param vnetAddressPrefix string = '10.0.0.0/16'
-param vnetAddressPrefix2 string = '192.168.0.0/16'
-param keyvaultSKUName string = 'standard'
-param keyvaultName string = 'sncaiskv1234567'
 param managedIdentityName string = 'ucmanagedid'
 param workspaceName string = 'sncaisdatabricks'
 
@@ -64,6 +57,7 @@ module virtualNetwork './modules/network/network.bicep' = {
     vnetName: vnetName
     nsgs: nsgs
     routeTableId: routeTable.outputs.routeTableId
+    dnsServer: variables.dnsServer
   }
   dependsOn: [
     resourceGroup
@@ -71,22 +65,23 @@ module virtualNetwork './modules/network/network.bicep' = {
 }
 
 // [for i in range(0,3) : if (i == 0)
-module virtualNetwork2 './modules/network/network.bicep' = {
-  scope: az.resourceGroup(resourceGroups[0])
-  name: vnetName2
-  params: {
-    location: variables.location
-    subnets: variables.subnets2
-    // subnetPrefixes: variables.subnets.subnetPrefix
-    vnetAddressPrefix: vnetAddressPrefix2
-    vnetName: vnetName2
-    nsgs: nsgs
-    routeTableId: routeTable.outputs.routeTableId
-  }
-  dependsOn: [
-    resourceGroup
-  ]
-}
+// module virtualNetwork2 './modules/network/network.bicep' = {
+//   scope: az.resourceGroup(resourceGroups[0])
+//   name: vnetName2
+//   params: {
+//     location: variables.location
+//     subnets: variables.subnets2
+//     // subnetPrefixes: variables.subnets.subnetPrefix
+//     vnetAddressPrefix: vnetAddressPrefix2
+//     vnetName: vnetName2
+//     nsgs: nsgs
+//     routeTableId: routeTable.outputs.routeTableId
+//     dnsServer: variables.dnsServer
+//   }
+//   dependsOn: [
+//     resourceGroup
+//   ]
+// }
 
 // module vnetpeering1 'modules/network/vnetpeering.bicep' = {
 //   scope: az.resourceGroup(resourceGroups[0])
@@ -123,12 +118,12 @@ module virtualNetwork2 './modules/network/network.bicep' = {
 // }
 
 // resource vhub 'Microsoft.Network/virtualHubs@2022-09-01' existing = {
-//   scope: az.resourceGroup(resourceGroups[2])
-//   name: reference(subscription().subscriptionId, resourceGroups[0], '')
+//   scope: az.resourceGroup('9606f0a1-4502-4c86-8f75-660af3fdb023', 'Ansible-RG')
+//   name: 'vhub'
 // }
 
 // module vnetpeering3 'modules/network/vnetpeering.bicep' = {
-//   scope: az.resourceGroup(resourceGroups[2])
+//   scope: az.resourceGroup('9606f0a1-4502-4c86-8f75-660af3fdb023', 'Ansible-RG')
 //   name: 'snchubcon'
 //   params: {
 //     peeringName: 'snchubcon'
@@ -170,10 +165,18 @@ module storage 'modules/storageAccount/storageaccount.bicep' = [for (storageAcco
     kind: variables.storageAccounts[i].kind
     sku: variables.storageAccounts[i].sku
     storageAccountName: variables.storageAccounts[i].name
+    isHnsEnabled: variables.storageAccounts[i].isHnsEnabled
+    allowBlobPublicAccess: variables.storageAccounts[i].allowBlobPublicAccess
+    principalId: managedIdentity.outputs.objectId
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')
   }
+  dependsOn: [
+    resourceGroup
+  ]
 }]
 
-module privateDNSZone 'modules/network/privateDNSZone.bicep' = {
+
+module blobPrivateDNSZone 'modules/network/privateDNSZone.bicep' = {
   scope: az.resourceGroup(resourceGroups[2])
   name: variables.blobDNS
   params: {
@@ -181,6 +184,22 @@ module privateDNSZone 'modules/network/privateDNSZone.bicep' = {
     registrationEnabled: false
     vnetId: virtualNetwork.outputs.vnetId
   }
+  dependsOn: [
+    resourceGroup
+  ]
+}
+
+module dfsPrivateDNSZone 'modules/network/privateDNSZone.bicep' = {
+  scope: az.resourceGroup(resourceGroups[2])
+  name: variables.dfs
+  params: {
+    privateDNSZoneName: variables.dfs
+    registrationEnabled: false
+    vnetId: virtualNetwork.outputs.vnetId
+  }
+  dependsOn: [
+    resourceGroup
+  ]
 }
 
 module storageAccountPrivateEndpoint 'modules/network/privateEndpoint.bicep' = [for (storageAcount, i) in variables.storageAccounts: if (createStorage) {
@@ -194,9 +213,9 @@ module storageAccountPrivateEndpoint 'modules/network/privateEndpoint.bicep' = [
     vNetResourceGroup: resourceGroups[0]
     location: variables.location
     privateLinkServiceId: storage[i].outputs.storageAccountId
-    groupId: 'blob'
+    groupId: (variables.storageAccounts[i].isHnsEnabled ? 'dfs' : 'blob')
     // privateDNSZoneName: 'privatelink.blob.core.windows.net'
-    privateDNSZoneId: privateDNSZone.outputs.dnsZoneId
+    privateDNSZoneId: (variables.storageAccounts[i].isHnsEnabled ? dfsPrivateDNSZone.outputs.dnsZoneId : blobPrivateDNSZone.outputs.dnsZoneId)
     privateEndpointDnsGroupName: '${variables.storageAccounts[i].name}-PE'
   }
   dependsOn: [
@@ -211,6 +230,9 @@ module managedIdentity 'modules/identity/identity.bicep' = {
     location: variables.location
     managedIdentityName: managedIdentityName 
   }
+  dependsOn: [
+    resourceGroup
+  ]
 }
 
 // module keyvault 'modules/keyvault/keyvault.bicep' = {
@@ -225,11 +247,24 @@ module managedIdentity 'modules/identity/identity.bicep' = {
 //   }
 // }
 
+module apimPrivateDNSZone 'modules/network/privateDNSZone.bicep' = {
+  scope: az.resourceGroup(resourceGroups[2])
+  name: variables.Gateway
+  params: {
+    privateDNSZoneName: variables.Gateway
+    registrationEnabled: false
+    vnetId: virtualNetwork.outputs.vnetId
+  }
+  dependsOn: [
+    resourceGroup
+  ]
+}
+
 module apim 'modules/apim.bicep' = {
   scope: az.resourceGroup(resourceGroups[1])
-  name: 'sncaisapim'
+  name: 'sncapim-14'
   params: {
-    apimName: 'sncaisapim'
+    apimName: 'sncapim-14'
     apimPublisherEmail: 'emmachi72.ec@gmail.com'
     apimPublisherName: 'Uchenna Chibueze'
     apimSKUCapacity: 1
@@ -247,38 +282,24 @@ module apim 'modules/apim.bicep' = {
 
 module apimAccountPrivateEndpoint 'modules/network/privateEndpoint.bicep' = {
   scope: az.resourceGroup(resourceGroups[2])
-  name: 'apim-PE'
+  name: 'apim14-PE'
   params: {
-    privateEndpointName: 'apim-PE'
+    privateEndpointName: 'apim14-PE'
     privateLinkServiceName: 'sncpls'
-    subnetName: variables.subnets[0].name
-    vNetName: vnetName
-    vNetResourceGroup: resourceGroups[0]
+    subnetName:  variables.subnets[0].name //apimSubnet.name // 
+    vNetName:  vnetName //apimvnet.name //
+    vNetResourceGroup: resourceGroups[0] // 'biceptest-rg' // 
     location: variables.location
     privateLinkServiceId: apim.outputs.apimId
     groupId: 'Gateway'
-    // privateDNSZoneName: 'privatelink.blob.core.windows.net'
     privateDNSZoneId: apimPrivateDNSZone.outputs.dnsZoneId
-    privateEndpointDnsGroupName: 'apim-PE'
+    privateEndpointDnsGroupName: 'apim14-PE'
   }
   dependsOn: [
     resourceGroup
+    apim
   ]
 }
-
-module apimPrivateDNSZone 'modules/network/privateDNSZone.bicep' = {
-  scope: az.resourceGroup(resourceGroups[2])
-  name: variables.Gateway
-  params: {
-    privateDNSZoneName: variables.Gateway
-    registrationEnabled: false
-    vnetId: virtualNetwork.outputs.vnetId
-  }
-  dependsOn: [
-    resourceGroup
-  ]
-}
-
 
 // module appGateway 'modules/network/appgateway.bicep' = {
 //   scope: az.resourceGroup(resourceGroups[2])
@@ -352,12 +373,49 @@ module apimPrivateDNSZone 'modules/network/privateDNSZone.bicep' = {
 //   ]
 // }
 
-// module databricks 'modules/databrick/databrick.bicep' = {
-//   scope: resourceGroup
-//   name: workspaceName
-//   params: {
-//     managedResourceGroupId: subscriptionResourceId('Microsoft.Resources/resourceGroups', managedResourceGroupName)
-//     workspaceName: workspaceName
-//     location: location
-//   }
-// }
+module databricksPrivateDNSZone 'modules/network/privateDNSZone.bicep' = {
+  scope: az.resourceGroup(resourceGroups[2])
+  name: variables.databricks_ui_api
+  params: {
+    privateDNSZoneName: variables.databricks_ui_api
+    registrationEnabled: false
+    vnetId: virtualNetwork.outputs.vnetId
+  }
+  dependsOn: [
+    resourceGroup
+  ]
+}
+
+module databricks 'modules/databrick/databrick.bicep' = {
+  scope: az.resourceGroup(resourceGroups[2])
+  name: workspaceName
+  params: {
+    managedResourceGroupId: subscriptionResourceId('Microsoft.Resources/resourceGroups', managedResourceGroupName)
+    workspaceName: workspaceName
+    location: variables.location
+    privateSubnetName: variables.subnets[2].name
+    publicSubnetName: variables.subnets[3].name
+    virtualNetworkId: virtualNetwork.outputs.vnetId
+  }
+}
+
+module databricksPrivateEndpoint 'modules/network/privateEndpoint.bicep' = {
+  scope: az.resourceGroup(resourceGroups[2])
+  name: 'adb-PE'
+  params: {
+    privateEndpointName: 'adb-PE'
+    privateLinkServiceName: 'sncpls'
+    subnetName: variables.subnets[0].name
+    vNetName: vnetName
+    vNetResourceGroup: resourceGroups[0]
+    location: variables.location
+    privateLinkServiceId: databricks.outputs.workspaceId
+    groupId: 'databricks_ui_api'
+    // privateDNSZoneName: 'privatelink.blob.core.windows.net'
+    privateDNSZoneId: databricksPrivateDNSZone.outputs.dnsZoneId
+    privateEndpointDnsGroupName: 'adb-PE'
+  }
+  dependsOn: [
+    databricks
+  ]
+}

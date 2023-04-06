@@ -14,6 +14,8 @@ param routeTableId string
 // @description('Subnet address space')
 // param subnetPrefixes array
 
+param dnsServer string
+
 param nsgs object
 
 resource networkSecurityGroup 'Microsoft.Network/networkSecurityGroups@2020-06-01' = [for nsg in nsgs.nsgs: {
@@ -36,16 +38,29 @@ resource network 'Microsoft.Network/virtualNetworks@2022-07-01' = {
         vnetAddressPrefix
       ]
     }
+    dhcpOptions: {
+      dnsServers: [
+        dnsServer
+      ]
+    }
     subnets: [ for (subnet,i) in subnets: {
       name: subnet.name
       properties: {
         addressPrefix: subnet.subnetPrefix
-        networkSecurityGroup: subnet.name == 'appgwSubnet' ? null : {
+        networkSecurityGroup: (subnet.associateNSG == false) ? null : {
           id: networkSecurityGroup[i].id
         }
-        routeTable: subnet.name == 'appgwSubnet' ? null : {
+        routeTable: (subnet.associateNSG == false) ? null : {
           id: routeTableId
         }
+        delegations: (subnet.delegation == false) ? [] : [
+          {
+            name: subnet.delegationName
+            properties: {
+              serviceName: subnet.delegationServiceName
+            }
+          }
+        ]
       }
     }]
   }

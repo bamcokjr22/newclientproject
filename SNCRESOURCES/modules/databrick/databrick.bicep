@@ -14,6 +14,12 @@ param location string
 
 param managedResourceGroupId string
 
+param privateSubnetName string
+
+param publicSubnetName string
+
+param virtualNetworkId string
+
 // var managedResourceGroupName = 'databricks-rg-${workspaceName}-${uniqueString(workspaceName, resourceGroup().id)}'
 
 resource databricks 'Microsoft.Databricks/workspaces@2022-04-01-preview' = {
@@ -58,22 +64,22 @@ resource databricks 'Microsoft.Databricks/workspaces@2022-04-01-preview' = {
   //   }
   //   managedDiskIdentity: {}
     managedResourceGroupId: managedResourceGroupId
-    // parameters: {
+    parameters: {
   //     amlWorkspaceId: {
   //       value: 'string'
   //     }
-  //     customPrivateSubnetName: {
-  //       value: 'string'
-  //     }
-  //     customPublicSubnetName: {
-  //       value: 'string'
-  //     }
-  //     customVirtualNetworkId: {
-  //       value: 'string'
-  //     }
-      // enableNoPublicIp: {
-        // value: disablePublicIp
-      // }
+      customPrivateSubnetName: {
+        value: privateSubnetName
+      }
+      customPublicSubnetName: {
+        value: publicSubnetName
+      }
+      customVirtualNetworkId: {
+        value: virtualNetworkId
+      }
+      enableNoPublicIp: {
+        value: disablePublicIp
+      }
   //     encryption: {
   //       value: {
   //         KeyName: 'string'
@@ -110,12 +116,12 @@ resource databricks 'Microsoft.Databricks/workspaces@2022-04-01-preview' = {
   //       value: 'string'
   //     }
     }
-  //   publicNetworkAccess: 'string'
-  //   requiredNsgRules: 'string'
+    publicNetworkAccess: 'Disabled'
+    requiredNsgRules: 'NoAzureDatabricksRules'
   //   storageAccountIdentity: {}
   //   uiDefinitionUri: 'string'
   //   updatedBy: {}
-  // }
+  }
 }
 
-output workspace object = databricks.properties
+output workspaceId string = databricks.id

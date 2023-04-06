@@ -16,31 +16,45 @@ resource apiManagementInstance 'Microsoft.ApiManagement/service@2022-08-01' = {
     capacity: apimSKUCapacity
     name: apimSKUName
   }
-  properties:{
+  properties: {
     virtualNetworkConfiguration: (apimVirtualNetworkTypeEnabled == false) ? null : {
       subnetResourceId: subnetId
     }
     virtualNetworkType: (apimVirtualNetworkTypeEnabled) ? apimVirtualNetworkType : 'None'
     publisherEmail: apimPublisherEmail
     publisherName: apimPublisherName
-    // privateEndpointConnections: [
-    //   {
-    //     id: privateEndpointId
-    //     name: 'apimpe'
-    //     properties: {
-    //       // privateEndpoint: {}
-    //       privateLinkServiceConnectionState: {
-    //         // actionsRequired: ''
-    //         description: 'Approved by automated script'
-    //         status: 'Approved'
-    //       }
-    //     }
-    //     // type: ''
-    //   }
-    // ]
-    
   }
 }
 
+
+// resource diagSettings 'microsoft.insights/diagnosticSettings@2017-05-01-preview' = {
+//   name: 'writeToLogAnalytics'
+//   scope: apim
+//   properties:{
+//    logAnalyticsDestinationType: 'Dedicated'
+//    workspaceId : workspace_id
+//     logs:[
+//       {
+//         category: 'GatewayLogs'
+//         enabled:true
+//         retentionPolicy:{
+//           enabled:false
+//           days: 0
+//         }
+//       }         
+//     ]
+//     metrics:[
+//       {
+//         category: 'AllMetrics'
+//         enabled:true
+//         timeGrain: 'PT1M'
+//         retentionPolicy:{
+//          enabled:false
+//          days: 0
+//        }
+//       }
+//     ]
+//   }
+//  }
 
 output apimId string = apiManagementInstance.id

@@ -1,22 +1,35 @@
 {
     
     "blobDNS": "privatelink.blob.core.windows.net",
-    "tableDNS": "privatelink.blob.core.windows.net",
-    "queueDNS": "privatelink.blob.core.windows.net",
+    "tableDNS": "privatelink.table.core.windows.net",
+    "queueDNS": "privatelink.queue.core.windows.net",
     "file": "privatelink.file.core.windows.net",
     "web": "privatelink.web.core.windows.net",
     "dfs": "privatelink.dfs.core.windows.net",
     "Gateway": "privatelink.azure-api.net",
+    "databricks_ui_api": "privatelink.azuredatabricks.net",
+    "dnsServer": "10.1.0.132",
     "storageAccounts": [
         {
             "name": "sncstora1",
             "sku": "Standard_LRS",
-            "kind": "StorageV2"
+            "kind": "StorageV2",
+            "isHnsEnabled": true,
+            "allowBlobPublicAccess": false
         },
         {
             "name": "sncstora2",
             "sku": "Standard_LRS",
-            "kind": "StorageV2"
+            "kind": "StorageV2",
+            "isHnsEnabled": true,
+            "allowBlobPublicAccess": false
+        },
+        {
+            "name": "sncstora3",
+            "sku": "Standard_LRS",
+            "kind": "StorageV2",
+            "isHnsEnabled": false,
+            "allowBlobPublicAccess": false
         }
     ],
     "publicIPName": "snstestpip",
@@ -35,15 +48,31 @@
     "subnets": [
         {
             "name": "sncsubnet",
-            "subnetPrefix": "10.0.0.0/24"
+            "subnetPrefix": "10.0.0.0/24",
+            "delegation": false,
+            "associateNSG": true
         },
         {
             "name": "apimSubnet",
-            "subnetPrefix": "10.0.1.0/24" 
+            "subnetPrefix": "10.0.1.0/24",
+            "delegation": false,
+            "associateNSG": false
         },
         {
-            "name": "appgwSubnet",
-            "subnetPrefix": "10.0.2.0/24"
+            "name": "databricksprisub",
+            "subnetPrefix": "10.0.5.0/25",
+            "delegationServiceName": "Microsoft.Databricks/workspaces",
+            "delegationName": "Microsoft.Databricks/workspaces",
+            "delegation": true,
+            "associateNSG": true
+        },
+        {
+            "name": "databrickspubsub",
+            "subnetPrefix": "10.0.4.0/25",
+            "delegationServiceName": "Microsoft.Databricks/workspaces",
+            "delegationName": "Microsoft.Databricks/workspaces",
+            "delegation": true,
+            "associateNSG": true
         }
     ],
     "subnets2": [
@@ -59,59 +88,214 @@
     "nsgs": [
     {
         "name": "nsg1",
-        "rules": [{
-            "name": "rule1",
-            "properties": {
-                "protocol": "Tcp",
-                "sourcePortRange": "*",
-                "destinationPortRange": "*",
-                "sourceAddressPrefix": "VirtualNetwork",
-                "destinationAddressPrefix": "*",
-                "access": "Allow",
-                "priority": 100,
-                "direction": "Inbound"
-            }
-        },
-        {
-            "name": "rule2",
-            "properties": {
-                "protocol": "Tcp",
-                "sourcePortRange": "*",
-                "destinationPortRange": "80",
-                "sourceAddressPrefix": "VirtualNetwork",
-                "destinationAddressPrefix": "*",
-                "access": "Allow",
-                "priority": 200,
-                "direction": "Inbound"
-            }
-        }]
+        "rules": []
     },
     {
         "name": "nsg2",
         "rules": [{
-            "name": "rule3",
+            "name": "ApiManagement",
             "properties": {
                 "protocol": "Tcp",
                 "sourcePortRange": "*",
-                "destinationPortRange": "22",
+                "destinationPortRange": "3443",
+                "sourceAddressPrefix": "ApiManagement",
+                "destinationAddressPrefix": "VirtualNetwork",
+                "access": "Allow",
+                "priority": 100,
+                "direction": "Inbound",
+                "description": "Management endpoint for Azure portal and PowerShell"
+            }
+        },
+        {
+            "name": "AzureLoadBalancer",
+            "properties": {
+                "protocol": "TCP",
+                "sourcePortRange": "*",
+                "destinationPortRange": "6390",
+                "sourceAddressPrefix": "AzureLoadBalancer",
+                "destinationAddressPrefix": "VirtualNetwork",
+                "access": "Allow",
+                "priority": 200,
+                "direction": "Inbound",
+                "description": "Dependency on Azure Storage"
+            }
+        },
+        {
+            "name": "Storage",
+            "properties": {
+                "protocol": "Tcp",
+                "sourcePortRange": "*",
+                "destinationPortRange": "443",
                 "sourceAddressPrefix": "VirtualNetwork",
-                "destinationAddressPrefix": "*",
+                "destinationAddressPrefix": "Storage",
+                "access": "Allow",
+                "priority": 300,
+                "direction": "Outbound",
+                "description": "Dependency on Azure Storage"
+            }
+        },
+        {
+            "name": "SQL",
+            "properties": {
+                "protocol": "TCP",
+                "sourcePortRange": "*",
+                "destinationPortRange": "1443",
+                "sourceAddressPrefix": "VirtualNetwork",
+                "destinationAddressPrefix": "SQL",
+                "access": "Allow",
+                "priority": 400,
+                "direction": "Outbound",
+                "description": "Access to Azure SQL endpoints"
+            }
+        },
+        {
+            "name": "AzureKeyVault",
+            "properties": {
+                "protocol": "TCP",
+                "sourcePortRange": "*",
+                "destinationPortRange": "443",
+                "sourceAddressPrefix": "VirtualNetwork",
+                "destinationAddressPrefix": "AzureKeyVault",
+                "access": "Allow",
+                "priority": 500,
+                "direction": "Outbound",
+                "description": "Access to Azure Key Vault"
+            }
+        }]
+    },
+    {
+        "name": "nsg3",
+        "rules": [{
+            "name": "Microsoft.Databricks-workspaces_UseOnly_databricks-worker-to-worker-inbound",
+            "properties": {
+                "protocol": "*",
+                "sourcePortRange": "*",
+                "destinationPortRange": "*",
+                "sourceAddressPrefix": "VirtualNetwork",
+                "destinationAddressPrefix": "VirtualNetwork",
                 "access": "Allow",
                 "priority": 100,
                 "direction": "Inbound"
             }
         },
         {
-            "name": "rule4",
+            "name": "Microsoft.Databricks-workspaces_UseOnly_databricks-worker-to-worker-outbound",
             "properties": {
-                "protocol": "Tcp",
+                "protocol": "*",
                 "sourcePortRange": "*",
-                "destinationPortRange": "3443",
+                "destinationPortRange": "*",
                 "sourceAddressPrefix": "VirtualNetwork",
-                "destinationAddressPrefix": "*",
+                "destinationAddressPrefix": "VirtualNetwork",
                 "access": "Allow",
-                "priority": 200,
+                "priority": 100,
+                "direction": "Outbound"
+            }
+        },
+        {
+            "name": "Microsoft.Databricks-workspaces_UseOnly_databricks-worker-to-sql",
+            "properties": {
+                "protocol": "tcp",
+                "sourcePortRange": "*",
+                "destinationPortRange": "3306",
+                "sourceAddressPrefix": "VirtualNetwork",
+                "destinationAddressPrefix": "Sql",
+                "access": "Allow",
+                "priority": 101,
+                "direction": "Outbound"
+            }
+        },
+        {
+            "name": "Microsoft.Databricks-workspaces_UseOnly_databricks-worker-to-storage",
+            "properties": {
+                "protocol": "tcp",
+                "sourcePortRange": "*",
+                "destinationPortRange": "443",
+                "sourceAddressPrefix": "VirtualNetwork",
+                "destinationAddressPrefix": "Storage",
+                "access": "Allow",
+                "priority": 102,
+                "direction": "Outbound"
+            }
+        },
+        {
+            "name": "Microsoft.Databricks-workspaces_UseOnly_databricks-worker-to-eventhub",
+            "properties": {
+                "protocol": "tcp",
+                "sourcePortRange": "*",
+                "destinationPortRange": "9093",
+                "sourceAddressPrefix": "VirtualNetwork",
+                "destinationAddressPrefix": "EventHub",
+                "access": "Allow",
+                "priority": 103,
+                "direction": "Outbound"
+            }
+        }]
+    },
+    {
+        "name": "nsg4",
+        "rules": [{
+            "name": "Microsoft.Databricks-workspaces_UseOnly_databricks-worker-to-worker-inbound",
+            "properties": {
+                "protocol": "*",
+                "sourcePortRange": "*",
+                "destinationPortRange": "*",
+                "sourceAddressPrefix": "VirtualNetwork",
+                "destinationAddressPrefix": "VirtualNetwork",
+                "access": "Allow",
+                "priority": 100,
                 "direction": "Inbound"
+            }
+        },
+        {
+            "name": "Microsoft.Databricks-workspaces_UseOnly_databricks-worker-to-worker-outbound",
+            "properties": {
+                "protocol": "*",
+                "sourcePortRange": "*",
+                "destinationPortRange": "*",
+                "sourceAddressPrefix": "VirtualNetwork",
+                "destinationAddressPrefix": "VirtualNetwork",
+                "access": "Allow",
+                "priority": 100,
+                "direction": "Outbound"
+            }
+        },
+        {
+            "name": "Microsoft.Databricks-workspaces_UseOnly_databricks-worker-to-sql",
+            "properties": {
+                "protocol": "tcp",
+                "sourcePortRange": "*",
+                "destinationPortRange": "3306",
+                "sourceAddressPrefix": "VirtualNetwork",
+                "destinationAddressPrefix": "Sql",
+                "access": "Allow",
+                "priority": 101,
+                "direction": "Outbound"
+            }
+        },
+        {
+            "name": "Microsoft.Databricks-workspaces_UseOnly_databricks-worker-to-storage",
+            "properties": {
+                "protocol": "tcp",
+                "sourcePortRange": "*",
+                "destinationPortRange": "443",
+                "sourceAddressPrefix": "VirtualNetwork",
+                "destinationAddressPrefix": "Storage",
+                "access": "Allow",
+                "priority": 102,
+                "direction": "Outbound"
+            }
+        },
+        {
+            "name": "Microsoft.Databricks-workspaces_UseOnly_databricks-worker-to-eventhub",
+            "properties": {
+                "protocol": "tcp",
+                "sourcePortRange": "*",
+                "destinationPortRange": "9093",
+                "sourceAddressPrefix": "VirtualNetwork",
+                "destinationAddressPrefix": "EventHub",
+                "access": "Allow",
+                "priority": 103,
+                "direction": "Outbound"
             }
         }]
     }

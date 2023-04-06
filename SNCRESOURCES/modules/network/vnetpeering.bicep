@@ -28,5 +28,7 @@ resource hubpeering 'Microsoft.Network/virtualHubs/hubVirtualNetworkConnections@
     remoteVirtualNetwork: {
       id: vnetId
     }
+    enableInternetSecurity: true
   }
 }
+
