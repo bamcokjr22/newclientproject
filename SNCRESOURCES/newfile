@@ -1,0 +1,50 @@
+Module 6: Implementing a practical Terraform Use Case
+12/15/2022
+Objective
+In this final module, you will gain hands on experience with Terraform by building a solution to a practical use case.
+
+Scenario
+A "cloud landing zone" is a fully operational cloud environment that is ready to host applications that have either been migrated from other places (on-premises, other cloud providers) or are new cloud native applications. 
+The landing zone often includes core services including compute, storage and networking resources, as well as appropriate configuration of these services. 
+This exercise works through the creation of a small landing zone that will offer Azure App Service and Azure Container Instance for compute services, and an Azure VNET for network integration of the compute resources.
+
+Task 1: Build your Terraform Modules
+Develop Terraform modules that will be the building blocks of your landing zone.
+
+Azure VNET
+azurerm_virtual_network
+The VNET should contain the following:
+A subnet delegated to Azure Container Instance (ACI)
+A subnet for Azure Application Gateway (minimum /24)
+A subnet for Private Endpoints (enforce_private_link_endpoint_network_policies = false)
+A subnet delegated to Microsoft.Web/serverFarms for App Service
+
+Azure App Service
+azurerm_linux_web_app
+The App Service should include the following:
+Deploy an App Service Plan alongside the web app azurerm_app_service_plan
+Use "Managed Identity"
+Allow anonymous access.
+Enable TLS 1.2 and require HTTPS
+Add regional VNET integration
+Deploy a private DNS zone for App Services and link it to the VNET azurerm_private_dns_zone
+Create a Private Endpoint for the App Service azurerm_private_endpoint
+
+Azure Container Instances
+azurerm_container_group
+The Container Instances deployment should reflect the following characteristics:
+Os_type = Linux
+Create a NIC and reference it in the Network_profile_Id
+Use the Microsoft 'hello world' image in your deployment to verify
+mcr.microsoft.com/azuredocs/aci-helloworld:latest
+
+Use your modules to build the landing zone
+Build the landing zone shown above from the Terraform modules you've just built. 
+You may notice that the landing zone reference above contains additional "supporting" resources including an Azure Application Gateway.
+Do your best to include these resources in your deployment.
+
+Extending landing zone
+If you are successfully deploy the landing zone, extend your learning by enhancing the landing zone. 
+Try taking advantage of the reusability of Terraform to quickly role out another region, and add a DNS based load balancer like Azure Traffic Manager to send traffic to both regions.
+
+Try to avoid creating two separate Terraform configurations for the different regions - instead keep your configuration modular so that the same configuration can be used by simply changing variable values
