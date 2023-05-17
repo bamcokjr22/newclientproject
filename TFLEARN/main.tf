@@ -4,7 +4,7 @@ resource "azurerm_resource_group" "ais_rg" {
 }
 
 module "virtualnetwork" {
-    source                  =       "../modules/virtual_network"
+    source                  =       "./modules/virtual_network"
     vnet_name               =       var.vnet_name
     resource_group_name     =       azurerm_resource_group.ais_rg.name
     location                =       azurerm_resource_group.ais_rg.location

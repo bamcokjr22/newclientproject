@@ -1,7 +1,3 @@
-variable "ais_rg" {
-    type    =   string
-}
-
 variable "vnet_name" {
     type = string  
 }
