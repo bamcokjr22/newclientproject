@@ -15,5 +15,5 @@ variable "resource_group_name" {
 }
 
 variable "subnets" {
-    type = map(any) 
+    # type = map(any) 
 }
