@@ -1,7 +1,7 @@
 resource_group_name         =       "ais-tf-rg"
 vnet_name                   =       "ais-vnet"  
 address_space               =       ["192.168.0.0/16"]
-location                    =       "Central US"
+location                    =       "West Europe"
 subnets                     =       {
     appservice_subnet = {
         subnet_name             = "appsvc"

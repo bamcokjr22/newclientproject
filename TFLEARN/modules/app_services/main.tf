@@ -23,9 +23,10 @@ resource "azurerm_private_endpoint" "winappsvcpe" {
     private_service_connection {
         name                            =   var.winappsvc_con_name
         private_connection_resource_id  =   azurerm_windows_web_app.winappsvc.id
-        subresource_names               =   ["web"]
+        subresource_names               =   ["sites"]
         is_manual_connection            =   var.is_manual_connection    
     }
+
 
     private_dns_zone_group {
         name                            =   var.winappsvc_pe_dns_zone_grp
