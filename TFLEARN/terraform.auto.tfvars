@@ -37,3 +37,11 @@ subnets                     =       {
         }]
     }
 }
+appsvcplan_name         =       "aiswinappsvcplan"
+appsvc_os_type          =       "Windows"
+appsvc_sku_name         =       "B1"
+winappsvc_name          =       "aiswinwebapptflearn"
+winappsvcpe_name        =       "aiswinwebapptflearn_pe"
+winappsvc_con_name      =       "aiswinwebapptflearn_con"
+is_manual_connection    =       false
+winappsvc_pe_dns_zone_grp=      "aiswinwebapptflearndns"
