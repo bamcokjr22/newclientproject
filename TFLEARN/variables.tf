@@ -140,3 +140,7 @@ variable "dns_config_ttl" {
 variable "traffic_mgr_endpoint_name" {
     type = string
 }
+
+variable "create_trafficmgr_profile" {
+    type = bool
+}

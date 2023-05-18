@@ -1,5 +1,5 @@
-resource_group_name         =       "ais-tf-rg"
-vnet_name                   =       "ais-vnet"  
+resource_group_name         =       "weu-ais-tf-rg"
+vnet_name                   =       "weu-ais-vnet"  
 address_space               =       ["192.168.0.0/16"]
 location                    =       "West Europe"
 subnets                     =       {
@@ -37,23 +37,23 @@ subnets                     =       {
         }]
     }
 }
-appsvcplan_name                     =       "aislnxappsvcplan"
-appsvc_os_type                      =       "Windows"
+appsvcplan_name                     =       "weuaislnxappsvcplan"
+appsvc_os_type                      =       "Linux"
 appsvc_sku_name                     =       "B1"
-lnxappsvc_name                      =       "aislnxwebapptflearn"
-lnxappsvcpe_name                    =       "aislnxwebapptflearn_pe"
-lnxappsvc_con_name                  =       "aislnxwebapptflearn_con"
+lnxappsvc_name                      =       "weuaislnxwebapptflearn"
+lnxappsvcpe_name                    =       "weuaislnxwebapptflearn_pe"
+lnxappsvc_con_name                  =       "weuaislnxwebapptflearn_con"
 is_manual_connection                =       false
-lnxappsvc_pe_dns_zone_grp           =      "aislnxwebapptflearndns"
-lnxappsvc_pe_dns_zone_vlink_name    =       "aisvlink"
+lnxappsvc_pe_dns_zone_grp           =      "weuaislnxwebapptflearndns"
+lnxappsvc_pe_dns_zone_vlink_name    =       "weuaisvlink"
 
-containergrp_name                   =   "aiscontainerinstance"
+containergrp_name                   =   "weuaiscontainerinstance"
 ip_address_type                     =   "Private"
-dns_name_label                      =   "aisaci"
+dns_name_label                      =   "weuaisaci"
 os_type                             =   "Linux" 
 
-appgw                               =   "aisappgw"
-appgwpip                            =   "aisappgw-pip"
+appgw                               =   "weuaisappgw"
+appgwpip                            =   "weuaisappgw-pip"
 appgw_sku                           =   "Standard_Small"
 appgw_sku_tier                      =   "Standard"
 appgw_sku_capacity                  =   2
@@ -72,3 +72,4 @@ dns_config_relative_name            =   "aistrafficmgr"
 dns_config_ttl                      =   100
 traffic_mgr_endpoint_name           =   "aispriendpoint"
 
+create_trafficmgr_profile           = true

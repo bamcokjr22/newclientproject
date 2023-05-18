@@ -63,28 +63,30 @@ module "application_gateway" {
 }
 
 resource "azurerm_traffic_manager_profile" "trafficmgr_profile" {
-  name                   = var.trafficmgr_profile_name
-  resource_group_name    = azurerm_resource_group.ais_rg.name
-  traffic_routing_method = var.traffic_routing_method
+    count                       = var.create_trafficmgr_profile ? 1 : 0
+    name                        = var.trafficmgr_profile_name
+    resource_group_name         = azurerm_resource_group.ais_rg.name
+    traffic_routing_method      = var.traffic_routing_method
 
-  dns_config {
-    relative_name = var.dns_config_relative_name
-    ttl           = var.dns_config_ttl
-  }
+    dns_config {
+        relative_name = var.dns_config_relative_name
+        ttl           = var.dns_config_ttl
+    }
 
-  monitor_config {
-    protocol                     = "HTTP"
-    port                         = 80
-    path                         = "/"
-    interval_in_seconds          = 30
-    timeout_in_seconds           = 9
-    tolerated_number_of_failures = 3
-  }
+    monitor_config {
+        protocol                     = "HTTP"
+        port                         = 80
+        path                         = "/"
+        interval_in_seconds          = 30
+        timeout_in_seconds           = 9
+        tolerated_number_of_failures = 3
+    }
 }
 
 resource "azurerm_traffic_manager_azure_endpoint" "traffic_mgr_endpoint" {
   name               = var.traffic_mgr_endpoint_name
-  profile_id         = azurerm_traffic_manager_profile.trafficmgr_profile.id
+  profile_id         = var.create_trafficmgr_profile ? "${azurerm_traffic_manager_profile.trafficmgr_profile[0].id}" : data.azurerm_traffic_manager_profile.trafficmgr_profile_ref.id
   weight             = 100
   target_resource_id = module.application_gateway.appgw_pip_id
 }
+

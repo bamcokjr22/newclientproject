@@ -2,7 +2,7 @@ terraform {
   backend "azurerm" {
     storage_account_name = "aisremotebackend"
     container_name       = "tfstate"
-    key                  = "terraform.tfstate"  
+    key                  = "weuterraform.tfstate"  
     resource_group_name = "AIS-TFLEARN-RG"
   }
 }
