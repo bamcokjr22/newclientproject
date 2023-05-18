@@ -29,3 +29,13 @@ module "linux_app_service" {
     virtual_network_id                  =       module.virtual_network.vnet_id
     web_subnet_id                       =       module.virtual_network.subnet_ids["appservice_subnet"]
 }
+
+module "container_instance" {
+    source                              =    "./modules/container_instance"
+    containergrp_name                   =   var.containergrp_name
+    location                            =   azurerm_resource_group.ais_rg.location
+    resource_group_name                 =   azurerm_resource_group.ais_rg.name  
+    ip_address_type                     =   var.ip_address_type
+    os_type                             =   var.os_type 
+    aci_subnet_id                       =   module.virtual_network.subnet_ids["container_instance_subnet"] 
+}

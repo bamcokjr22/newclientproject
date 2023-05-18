@@ -45,4 +45,9 @@ lnxappsvcpe_name                    =       "aislnxwebapptflearn_pe"
 lnxappsvc_con_name                  =       "aislnxwebapptflearn_con"
 is_manual_connection                =       false
 lnxappsvc_pe_dns_zone_grp           =      "aislnxwebapptflearndns"
-lnxappsvc_pe_dns_zone_vlink_name    =   "aisvlink"
+lnxappsvc_pe_dns_zone_vlink_name    =       "aisvlink"
+
+containergrp_name                   =   "aiscontainerinstance"
+ip_address_type                     =   "Private"
+dns_name_label                      =   "aisaci"
+os_type                             =   "Linux" 

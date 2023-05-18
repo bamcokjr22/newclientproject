@@ -53,3 +53,19 @@ variable "lnxappsvc_pe_dns_zone_grp" {
 variable "lnxappsvc_pe_dns_zone_vlink_name" {
     type = string
 }
+
+variable "containergrp_name" {
+    type = string
+}
+
+variable "ip_address_type" {
+    type = string
+}
+    
+variable "dns_name_label" {
+    type = string
+}
+
+variable "os_type" {
+    type = string
+}
