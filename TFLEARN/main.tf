@@ -61,3 +61,30 @@ module "application_gateway" {
     bend_ip_address                     =   [module.container_instance.container_ip]
     bend_fqdns                          =   ["${module.linux_app_service.lnxappsvc_name}.azurewebsites.net"] 
 }
+
+resource "azurerm_traffic_manager_profile" "trafficmgr_profile" {
+  name                   = var.trafficmgr_profile_name
+  resource_group_name    = azurerm_resource_group.ais_rg.name
+  traffic_routing_method = var.traffic_routing_method
+
+  dns_config {
+    relative_name = var.dns_config_relative_name
+    ttl           = var.dns_config_ttl
+  }
+
+  monitor_config {
+    protocol                     = "HTTP"
+    port                         = 80
+    path                         = "/"
+    interval_in_seconds          = 30
+    timeout_in_seconds           = 9
+    tolerated_number_of_failures = 3
+  }
+}
+
+resource "azurerm_traffic_manager_azure_endpoint" "traffic_mgr_endpoint" {
+  name               = var.traffic_mgr_endpoint_name
+  profile_id         = azurerm_traffic_manager_profile.trafficmgr_profile.id
+  weight             = 100
+  target_resource_id = module.application_gateway.appgw_pip_id
+}

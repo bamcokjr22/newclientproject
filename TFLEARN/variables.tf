@@ -121,3 +121,22 @@ variable "listener_name" {
 variable "request_routing_rule_name" {
     type = string
 }
+
+variable "trafficmgr_profile_name" {
+    type = string
+}
+
+variable "traffic_routing_method" {
+    type = string
+}
+
+variable "dns_config_relative_name" {
+    type = string
+}
+
+variable "dns_config_ttl" {
+}
+
+variable "traffic_mgr_endpoint_name" {
+    type = string
+}

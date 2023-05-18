@@ -65,3 +65,10 @@ backend_address_pool_name           =   "aisappgw-beap"
 http_setting_name                   =   "aisappgw-be-htst"
 listener_name                       =   "apisappgw-httplstn"
 request_routing_rule_name           =   "aisappgw-rqrt"
+
+trafficmgr_profile_name             =   "aistrafficmanager"
+traffic_routing_method              =   "Weighted"
+dns_config_relative_name            =   "aistrafficmgr"
+dns_config_ttl                      =   100
+traffic_mgr_endpoint_name           =   "aispriendpoint"
+
