@@ -1,3 +1,5 @@
+
+
 resource "azurerm_resource_group" "ais_rg" {
     name                    =       var.resource_group_name
     location                =       var.location
@@ -63,7 +65,7 @@ module "application_gateway" {
 }
 
 resource "azurerm_traffic_manager_profile" "trafficmgr_profile" {
-    count                       = var.create_trafficmgr_profile ? 1 : 0
+    for_each                    = var.create_trafficmgr_profile ? {} : {}
     name                        = var.trafficmgr_profile_name
     resource_group_name         = azurerm_resource_group.ais_rg.name
     traffic_routing_method      = var.traffic_routing_method
@@ -85,7 +87,7 @@ resource "azurerm_traffic_manager_profile" "trafficmgr_profile" {
 
 resource "azurerm_traffic_manager_azure_endpoint" "traffic_mgr_endpoint" {
   name               = var.traffic_mgr_endpoint_name
-  profile_id         = var.create_trafficmgr_profile ? "${azurerm_traffic_manager_profile.trafficmgr_profile[0].id}" : data.azurerm_traffic_manager_profile.trafficmgr_profile_ref.id
+  profile_id         = local.trafficmgr_profile_id != null ? local.trafficmgr_profile_id : data.azurerm_traffic_manager_profile.trafficmgr_profile_check.id 
   weight             = 100
   target_resource_id = module.application_gateway.appgw_pip_id
 }

@@ -72,4 +72,4 @@ dns_config_relative_name            =   "aistrafficmgr"
 dns_config_ttl                      =   100
 traffic_mgr_endpoint_name           =   "aispriendpoint"
 
-create_trafficmgr_profile           = false
+create_trafficmgr_profile           = true
