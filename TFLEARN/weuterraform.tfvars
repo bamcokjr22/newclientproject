@@ -1,11 +1,11 @@
-resource_group_name         =       "eus-ais-tf-rg"
-vnet_name                   =       "eus-ais-vnet"  
-address_space               =       ["172.18.0.0/16"]
-location                    =       "East US"
+resource_group_name         =       "weu-ais-tf-rg"
+vnet_name                   =       "weu-ais-vnet"  
+address_space               =       ["192.168.0.0/16"]
+location                    =       "West Europe"
 subnets                     =       {
     appservice_subnet = {
         subnet_name             = "appsvc"
-        subnet_address_prefix   = ["172.18.0.0/24"]
+        subnet_address_prefix   = ["192.168.0.0/24"]
         create_delegation       = true
         delegations             = [{
             name                    = "appSvcDelegation"
@@ -15,20 +15,20 @@ subnets                     =       {
     }
     private_endpoint_subnet = {
         subnet_name             = "pvtep"
-        subnet_address_prefix   = ["172.18.1.0/24"]
+        subnet_address_prefix   = ["192.168.1.0/24"]
         create_delegation       = false
         delegations  = []
     }
     appgateway_subnet = {
         subnet_name             = "appgw"
-        subnet_address_prefix   = ["172.18.2.0/24"]
+        subnet_address_prefix   = ["192.168.2.0/24"]
         create_delegation       = false
         service_delegation_name = []
         service_delegation_action = []
     }
     container_instance_subnet = {
         subnet_name             = "aci"
-        subnet_address_prefix   = ["172.18.3.0/24"]
+        subnet_address_prefix   = ["192.168.3.0/24"]
         create_delegation       = true
         delegations             = [{
             name                    = "containerDelegation"
@@ -37,23 +37,23 @@ subnets                     =       {
         }]
     }
 }
-appsvcplan_name                     =       "eusaislnxappsvcplan"
+appsvcplan_name                     =       "weuaislnxappsvcplan"
 appsvc_os_type                      =       "Linux"
 appsvc_sku_name                     =       "B1"
-lnxappsvc_name                      =       "eusaislnxwebapptflearn"
-lnxappsvcpe_name                    =       "eusaislnxwebapptflearn_pe"
-lnxappsvc_con_name                  =       "eusaislnxwebapptflearn_con"
+lnxappsvc_name                      =       "weuaislnxwebapptflearn"
+lnxappsvcpe_name                    =       "weuaislnxwebapptflearn_pe"
+lnxappsvc_con_name                  =       "weuaislnxwebapptflearn_con"
 is_manual_connection                =       false
-lnxappsvc_pe_dns_zone_grp           =      "eusaislnxwebapptflearndns"
-lnxappsvc_pe_dns_zone_vlink_name    =       "eusaisvlink"
+lnxappsvc_pe_dns_zone_grp           =      "weuaislnxwebapptflearndns"
+lnxappsvc_pe_dns_zone_vlink_name    =       "weuaisvlink"
 
-containergrp_name                   =   "eusaiscontainerinstance"
+containergrp_name                   =   "weuaiscontainerinstance"
 ip_address_type                     =   "Private"
-dns_name_label                      =   "eusaisaci"
+dns_name_label                      =   "weuaisaci"
 os_type                             =   "Linux" 
 
-appgw                               =   "eusaisappgw"
-appgwpip                            =   "eusaisappgw-pip"
+appgw                               =   "weuaisappgw"
+appgwpip                            =   "weuaisappgw-pip"
 appgw_sku                           =   "Standard_Small"
 appgw_sku_tier                      =   "Standard"
 appgw_sku_capacity                  =   2
