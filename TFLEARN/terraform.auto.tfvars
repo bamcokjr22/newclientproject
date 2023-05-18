@@ -21,7 +21,7 @@ subnets                     =       {
     }
     appgateway_subnet = {
         subnet_name             = "appgw"
-        subnet_address_prefix   = ["192.168.2.0/27"]
+        subnet_address_prefix   = ["192.168.2.0/24"]
         create_delegation       = false
         service_delegation_name = []
         service_delegation_action = []
@@ -37,11 +37,12 @@ subnets                     =       {
         }]
     }
 }
-appsvcplan_name         =       "aiswinappsvcplan"
-appsvc_os_type          =       "Windows"
-appsvc_sku_name         =       "B1"
-winappsvc_name          =       "aiswinwebapptflearn"
-winappsvcpe_name        =       "aiswinwebapptflearn_pe"
-winappsvc_con_name      =       "aiswinwebapptflearn_con"
-is_manual_connection    =       false
-winappsvc_pe_dns_zone_grp=      "aiswinwebapptflearndns"
+appsvcplan_name                     =       "aislnxappsvcplan"
+appsvc_os_type                      =       "Windows"
+appsvc_sku_name                     =       "B1"
+lnxappsvc_name                      =       "aislnxwebapptflearn"
+lnxappsvcpe_name                    =       "aislnxwebapptflearn_pe"
+lnxappsvc_con_name                  =       "aislnxwebapptflearn_con"
+is_manual_connection                =       false
+lnxappsvc_pe_dns_zone_grp           =      "aislnxwebapptflearndns"
+lnxappsvc_pe_dns_zone_vlink_name    =   "aisvlink"

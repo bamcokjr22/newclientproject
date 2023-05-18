@@ -30,15 +30,15 @@ variable "appsvc_sku_name" {
     type = string
 }
 
-variable "winappsvc_name" {
+variable "lnxappsvc_name" {
     type = string
 }
 
-variable "winappsvcpe_name" {
+variable "lnxappsvcpe_name" {
     type = string
 }
 
-variable "winappsvc_con_name" {
+variable "lnxappsvc_con_name" {
     type = string
 }
 
@@ -46,6 +46,10 @@ variable "is_manual_connection" {
     type = bool
 }
 
-variable "winappsvc_pe_dns_zone_grp" {
+variable "lnxappsvc_pe_dns_zone_grp" {
      type = string
+}
+
+variable "lnxappsvc_pe_dns_zone_vlink_name" {
+    type = string
 }
