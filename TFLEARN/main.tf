@@ -58,4 +58,6 @@ module "application_gateway" {
     request_routing_rule_name           =   var.request_routing_rule_name
     resource_group_name                 =   azurerm_resource_group.ais_rg.name
     location                            =   azurerm_resource_group.ais_rg.location
+    bend_ip_address                     =   [module.container_instance.container_ip]
+    bend_fqdns                          =   ["${module.linux_app_service.lnxappsvc_name}.azurewebsites.net"] 
 }

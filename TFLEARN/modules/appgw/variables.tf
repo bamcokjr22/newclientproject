@@ -61,3 +61,11 @@ variable "listener_name" {
 variable "request_routing_rule_name" {
     type = string
 }
+
+variable "bend_ip_address" {
+    type = list(string)
+}
+
+variable "bend_fqdns" {
+    type = list(string)
+}

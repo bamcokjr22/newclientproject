@@ -33,6 +33,8 @@ resource "azurerm_application_gateway" "appgw" {
 
   backend_address_pool {
     name = var.backend_address_pool_name
+    ip_addresses = var.bend_ip_address
+    fqdns = var.bend_fqdns
   }
 
   backend_http_settings {
