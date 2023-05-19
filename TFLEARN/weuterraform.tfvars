@@ -10,7 +10,7 @@ subnets                     =       {
         delegations             = [{
             name                    = "appSvcDelegation"
             service_delegation_name = "Microsoft.Web/serverFarms"
-            service_delegation_action = ["Microsoft.Network/virtualNetworks/subnets/action", "Microsoft.Network/virtualNetworks/subnets/prepareNetworkPolicies/action"]
+            service_delegation_action = ["Microsoft.Network/virtualNetworks/subnets/action"]
         }]
     }
     private_endpoint_subnet = {
@@ -33,7 +33,7 @@ subnets                     =       {
         delegations             = [{
             name                    = "containerDelegation"
             service_delegation_name = "Microsoft.ContainerInstance/containerGroups"
-            service_delegation_action = ["Microsoft.Network/virtualNetworks/subnets/action", "Microsoft.Network/virtualNetworks/subnets/prepareNetworkPolicies/action"]
+            service_delegation_action = ["Microsoft.Network/virtualNetworks/subnets/action"]
         }]
     }
 }
