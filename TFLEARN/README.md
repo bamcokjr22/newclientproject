@@ -7,7 +7,7 @@ For the first region
 4. terraform apply -var-file="weuterraform.tfvars" -auto-approve
 
 For the second region
-1. terraform init
+1. terraform init or terraform init -reconfigure
 2. terraform workspace new eus
 3. terraform plan -var-file="eusterraform.tfvars"
 4. terraform apply -var-file="eusterraform.tfvars" -auto-approve
