@@ -60,4 +60,11 @@ resource "azurerm_private_dns_zone_virtual_network_link" "lnxappsvc_pe_dns_zone_
 resource "azurerm_app_service_virtual_network_swift_connection" "lnxappsvc_swift_con" {
     app_service_id      = azurerm_linux_web_app.lnxappsvc.id
     subnet_id           = var.web_subnet_id
+
+    lifecycle {
+        ignignore_changes = [  
+            subnet_id,
+            app_service_id
+        ]
+    }
 }
