@@ -62,9 +62,6 @@ resource "azurerm_app_service_virtual_network_swift_connection" "lnxappsvc_swift
     subnet_id           = var.web_subnet_id
 
     lifecycle {
-        ignore_changes = [  
-            subnet_id,
-            app_service_id
-        ]
+        prevent_destroy = true
     }
 }
