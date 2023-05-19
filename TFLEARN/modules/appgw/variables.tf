@@ -69,3 +69,7 @@ variable "bend_ip_address" {
 variable "bend_fqdns" {
     type = list(string)
 }
+
+variable "appgw_dns_name_label" {
+    type = string
+}

@@ -62,6 +62,7 @@ module "application_gateway" {
     location                            =   azurerm_resource_group.ais_rg.location
     bend_ip_address                     =   [module.container_instance.container_ip]
     bend_fqdns                          =   ["${module.linux_app_service.lnxappsvc_name}.azurewebsites.net"] 
+    appgw_dns_name_label                =   var.appgw_dns_name_label
 }
 
 resource "azurerm_traffic_manager_profile" "trafficmgr_profile" {
@@ -87,7 +88,7 @@ resource "azurerm_traffic_manager_profile" "trafficmgr_profile" {
 
 resource "azurerm_traffic_manager_azure_endpoint" "traffic_mgr_endpoint" {
   name               = var.traffic_mgr_endpoint_name
-  profile_id         = var.create_trafficmgr_profile ? azurerm_traffic_manager_profile.trafficmgr_profile["profile"].id : data.azurerm_traffic_manager_profile.trafficmgr_profile_check.id
+  profile_id         = var.create_trafficmgr_profile ? "${azurerm_traffic_manager_profile.trafficmgr_profile["profile"].id}" : data.azurerm_traffic_manager_profile.trafficmgr_profile_check.id
   weight             = 100
   target_resource_id = module.application_gateway.appgw_pip_id
 }

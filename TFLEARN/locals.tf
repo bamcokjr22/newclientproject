@@ -1,3 +1,0 @@
-locals {
-  trafficmgr_profile_id = var.create_trafficmgr_profile ? null : data.azurerm_traffic_manager_profile.trafficmgr_profile_check.id
-}

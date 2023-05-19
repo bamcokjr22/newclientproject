@@ -72,4 +72,6 @@ dns_config_relative_name            =   "aistrafficmgr"
 dns_config_ttl                      =   100
 traffic_mgr_endpoint_name           =   "aispriendpoint"
 
-create_trafficmgr_profile           = true
+create_trafficmgr_profile           =   true
+
+appgw_dns_name_label                =   "weuappgwpip"

@@ -3,6 +3,7 @@ resource "azurerm_public_ip" "appgwpip" {
   resource_group_name = var.resource_group_name
   location            = var.location
   allocation_method   = var.allocation_method
+  domain_name_label   = var.appgw_dns_name_label 
 }
 
 resource "azurerm_application_gateway" "appgw" {

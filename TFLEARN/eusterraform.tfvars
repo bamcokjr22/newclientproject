@@ -68,8 +68,10 @@ request_routing_rule_name           =   "aisappgw-rqrt"
 
 trafficmgr_profile_name             =   "aistrafficmanager"
 traffic_routing_method              =   "Weighted"
-dns_config_relative_name            =   "aistrafficmgr"
+dns_config_relative_name            =   "eusaistrafficmgr"
 dns_config_ttl                      =   100
-traffic_mgr_endpoint_name           =   "aispriendpoint"
+traffic_mgr_endpoint_name           =   "eusaispriendpoint"
 
 create_trafficmgr_profile           = false
+
+appgw_dns_name_label                =   "eusappgwpip"

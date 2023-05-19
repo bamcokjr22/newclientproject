@@ -144,3 +144,7 @@ variable "traffic_mgr_endpoint_name" {
 variable "create_trafficmgr_profile" {
     type = bool
 }
+
+variable "appgw_dns_name_label" {
+    type = string
+}
