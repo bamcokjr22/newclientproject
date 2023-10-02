@@ -1,0 +1,106 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"Managed_Identity": {
+			"defaultValue": "",
+			"type": "String"
+		},
+		"location": {
+			"type": "string",
+			"defaultValue": "",
+			"metadata": {
+				"description": "Location, Currently, only East US, East US 2, and West Europe are supported."
+			}
+		},
+		"Environment": {
+			"type": "string",
+			"defaultValue": "",
+			"metadata": {
+				"description": "Environments_name"
+			}
+		},
+		"Application": {
+			"type": "string",
+			"defaultValue": "",
+			"metadata": {
+				"description": "Application_name"
+			}
+		},
+		"Cost_Center": {
+			"type": "string",
+			"defaultValue": "",
+			"metadata": {
+				"description": "Cost_Center_Number"
+			}
+		},
+		"Data_Classification": {
+			"type": "string",
+			"defaultValue": "",
+			"metadata": {
+				"description": "Data_Classification"
+			}
+		},
+		"Portfolio_Group": {
+			"type": "string",
+			"defaultValue": "",
+			"metadata": {
+				"description": "Portfolio_Group"
+			}
+		},
+		"Project_Number": {
+			"type": "string",
+			"defaultValue": "",
+			"metadata": {
+				"description": "Project_Number"
+			}
+		},
+		"Business_Unit": {
+			"type": "string",
+			"defaultValue": "",
+			"metadata": {
+				"description": "Business_Unit"
+			}
+		},
+		"Name": {
+			"type": "string",
+			"defaultValue": "",
+			"metadata": {
+				"description": "Name_Resource_Group"
+			}
+		},
+		"DR_Tier": {
+			"type": "string",
+			"defaultValue": "",
+			"metadata": {
+				"description": "DR_Tier"
+			}
+		},
+		"Role": {
+			"type": "string",
+			"defaultValue": "",
+			"metadata": {
+				"description": "Role"
+			}
+		}
+	},
+	"variables": {},
+	"resources": [{
+		"type": "Microsoft.ManagedIdentity/userAssignedIdentities",
+		"apiVersion": "2018-11-30",
+		"name": "[parameters('Managed_Identity')]",
+		"location": "eastus",
+		"tags": {
+			"Environment": "[parameters('Environment')]",
+			"Application": "[parameters('Application')]",
+			"Cost Center": "[parameters('Cost_Center')]",
+			"Data Classification": "[parameters('Data_Classification')]",
+			"Portfolio Group": "[parameters('Portfolio_Group')]",
+			"Project Number": "[parameters('Project_Number')]",
+			"Business Unit": "[parameters('Business_Unit')]",
+			"Name": "[parameters('Name')]",
+			"DR Tier": "[parameters('DR_Tier')]",
+			"Role": "[parameters('Role')]"
+		}
+	}]
+}
