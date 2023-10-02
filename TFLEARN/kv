@@ -1,0 +1,191 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"KeyVault_Name": {
+			"defaultValue": "",
+			"type": "String",
+			"metadata": {
+				"description": "Storage Account Name"
+			}
+		},
+		"Tenant_ID": {
+			"defaultValue": "",
+			"type": "String",
+			"metadata": {
+				"description": "Storage Account Name"
+			}
+		},
+		"Users_Object_ID": {
+			"defaultValue": "",
+			"type": "String",
+			"metadata": {
+				"description": "Storage Account Name"
+			}
+		},
+		"location": {
+			"type": "string",
+			"defaultValue": "",
+			"metadata": {
+				"description": "Location, Currently, only East US, East US 2, and West Europe are supported."
+			}
+		},
+		"Environment": {
+			"type": "string",
+			"defaultValue": "",
+			"metadata": {
+				"description": "Environments_name"
+			}
+		},
+		"Application": {
+			"type": "string",
+			"defaultValue": "",
+			"metadata": {
+				"description": "Application_name"
+			}
+		},
+		"Cost_Center": {
+			"type": "string",
+			"defaultValue": "",
+			"metadata": {
+				"description": "Cost_Center_Number"
+			}
+		},
+		"Data_Classification": {
+			"type": "string",
+			"defaultValue": "",
+			"metadata": {
+				"description": "Data_Classification"
+			}
+		},
+		"Portfolio_Group": {
+			"type": "string",
+			"defaultValue": "",
+			"metadata": {
+				"description": "Portfolio_Group"
+			}
+		},
+		"Project_Number": {
+			"type": "string",
+			"defaultValue": "",
+			"metadata": {
+				"description": "Project_Number"
+			}
+		},
+		"Business_Unit": {
+			"type": "string",
+			"defaultValue": "",
+			"metadata": {
+				"description": "Business_Unit"
+			}
+		},
+		"Name": {
+			"type": "string",
+			"defaultValue": "",
+			"metadata": {
+				"description": "Name_Resource_Group"
+			}
+		},
+		"DR_Tier": {
+			"type": "string",
+			"defaultValue": "",
+			"metadata": {
+				"description": "DR_Tier"
+			}
+		},
+		"Role": {
+			"type": "string",
+			"defaultValue": "",
+			"metadata": {
+				"description": "Role"
+			}
+		}
+	},
+	"variables": {},
+	"resources": [{
+		"type": "Microsoft.KeyVault/vaults",
+		"apiVersion": "2021-11-01-preview",
+		"name": "[parameters('KeyVault_Name')]",
+		"location": "eastus",
+		"tags": {
+			"Role": "[parameters('Role')]",
+			"Name": "[parameters('Name')]",
+			"Application": "[parameters('Application')]",
+			"Business Unit": "[parameters('Business_Unit')]",
+			"Cost Center": "[parameters('Cost_Center')]",
+			"Data Classification": "[parameters('Data_Classification')]",
+			"DR Tier": "[parameters('DR_Tier')]",
+			"Environment": "[parameters('Environment')]",
+			"Portfolio Group": "[parameters('Portfolio_Group')]",
+			"Project Number": "[parameters('Project_Number')]"
+		},
+		"properties": {
+			"sku": {
+				"family": "A",
+				"name": "Standard"
+			},
+			"tenantId": "[parameters('Tenant_ID')]",
+			"networkAcls": {
+				"bypass": "AzureServices",
+				"defaultAction": "Deny",
+				"ipRules": [],
+				"virtualNetworkRules": []
+			},
+			"accessPolicies": [{
+				"tenantId": "[parameters('Tenant_ID')]",
+				"objectId": "[parameters('Users_Object_ID')]",
+				"permissions": {
+					"keys": [
+						"Get",
+						"List",
+						"Update",
+						"Create",
+						"Import",
+						"Delete",
+						"Recover",
+						"Backup",
+						"Restore",
+						"GetRotationPolicy",
+						"SetRotationPolicy",
+						"Rotate"
+					],
+					"secrets": [
+						"Get",
+						"List",
+						"Set",
+						"Delete",
+						"Recover",
+						"Backup",
+						"Restore"
+					],
+					"certificates": [
+						"Get",
+						"List",
+						"Update",
+						"Create",
+						"Import",
+						"Delete",
+						"Recover",
+						"Backup",
+						"Restore",
+						"ManageContacts",
+						"ManageIssuers",
+						"GetIssuers",
+						"ListIssuers",
+						"SetIssuers",
+						"DeleteIssuers"
+					]
+				}
+			}],
+			"enabledForDeployment": false,
+			"enabledForDiskEncryption": false,
+			"enabledForTemplateDeployment": false,
+			"enableSoftDelete": true,
+			"softDeleteRetentionInDays": 90,
+			"enableRbacAuthorization": false,
+			"vaultUri": "[concat('https://', parameters('KeyVault_Name'), '.vault.azure.net/')]",
+			"provisioningState": "Succeeded",
+			"publicNetworkAccess": "Disabled"
+		}
+	}]
+}
