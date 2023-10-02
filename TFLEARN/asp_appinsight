@@ -1,0 +1,158 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"App_Service_Plan_name": {
+			"defaultValue": "",
+			"type": "String"
+		},
+		"Application_Insights_Name": {
+			"type": "string",
+			"defaultValue": "",
+			"metadata": {
+				"description": ""
+			}
+		},
+		"location": {
+			"type": "string",
+			"defaultValue": "",
+			"metadata": {
+				"description": "Location, Currently, only East US, East US 2, and West Europe are supported."
+			}
+		},
+		"Environment": {
+			"type": "string",
+			"defaultValue": "",
+			"metadata": {
+				"description": "Environments_name"
+			}
+		},
+		"Application": {
+			"type": "string",
+			"defaultValue": "",
+			"metadata": {
+				"description": "Application_name"
+			}
+		},
+		"Cost_Center_App_Services": {
+			"type": "string",
+			"defaultValue": "",
+			"metadata": {
+				"description": "Cost_Center_Number"
+			}
+		},
+		"Data_Classification": {
+			"type": "string",
+			"defaultValue": "",
+			"metadata": {
+				"description": "Data_Classification"
+			}
+		},
+		"Portfolio_Group": {
+			"type": "string",
+			"defaultValue": "",
+			"metadata": {
+				"description": "Portfolio_Group"
+			}
+		},
+		"Project_Number": {
+			"type": "string",
+			"defaultValue": "",
+			"metadata": {
+				"description": "Project_Number"
+			}
+		},
+		"Business_Unit": {
+			"type": "string",
+			"defaultValue": "",
+			"metadata": {
+				"description": "Business_Unit"
+			}
+		},
+		"Name_App_Services": {
+			"type": "string",
+			"defaultValue": "",
+			"metadata": {
+				"description": "Name_Resource_Group"
+			}
+		},
+		"DR_Tier": {
+			"type": "string",
+			"defaultValue": "",
+			"metadata": {
+				"description": "DR_Tier"
+			}
+		},
+		"Role_App_Services": {
+			"type": "string",
+			"defaultValue": "",
+			"metadata": {
+				"description": "Role"
+			}
+		}
+	},
+	"variables": {},
+	"resources": [{
+			"type": "Microsoft.Web/serverfarms",
+			"apiVersion": "2018-02-01",
+			"name": "[parameters('App_Service_Plan_name')]",
+			"location": "East US",
+			"tags": {
+				"Role": "[parameters('Role_App_Services')]",
+				"Name": "[parameters('Name_App_Services')]",
+				"Application": "[parameters('Application')]",
+				"Business Unit": "[parameters('Business_Unit')]",
+				"Cost Center": "[parameters('Cost_Center_App_Services')]",
+				"Data Classification": "[parameters('Data_Classification')]",
+				"DR Tier": "[parameters('DR_Tier')]",
+				"Environment": "[parameters('Environment')]",
+				"Portfolio Group": "[parameters('Portfolio_Group')]",
+				"Project Number": "[parameters('Project_Number')]"
+			},
+			"sku": {
+				"name": "S1",
+				"tier": "Standard",
+				"size": "S1",
+				"family": "S",
+				"capacity": 1
+			},
+			"kind": "app",
+			"properties": {
+				"perSiteScaling": false,
+				"maximumElasticWorkerCount": 1,
+				"isSpot": false,
+				"reserved": false,
+				"isXenon": false,
+				"hyperV": false,
+				"targetWorkerCount": 0,
+				"targetWorkerSizeId": 0
+			}
+		},
+		{
+			"type": "microsoft.insights/components",
+			"apiVersion": "2018-05-01-preview",
+			"name": "[parameters('Application_Insights_Name')]",
+			"location": "eastus",
+			"tags": {
+				"Role": "[parameters('Role_App_Services')]",
+				"Name": "[parameters('Name_App_Services')]",
+				"Application": "[parameters('Application')]",
+				"Business Unit": "[parameters('Business_Unit')]",
+				"Cost Center": "[parameters('Cost_Center_App_Services')]",
+				"Data Classification": "[parameters('Data_Classification')]",
+				"DR Tier": "[parameters('DR_Tier')]",
+				"Environment": "[parameters('Environment')]",
+				"Portfolio Group": "[parameters('Portfolio_Group')]",
+				"Project Number": "[parameters('Project_Number')]"
+			},
+			"kind": "web",
+			"properties": {
+				"Application_Type": "web",
+				"Request_Source": "IbizaWebAppExtensionCreate",
+				"RetentionInDays": 90,
+				"publicNetworkAccessForIngestion": "Enabled",
+				"publicNetworkAccessForQuery": "Enabled"
+			}
+		}
+	]
+}
