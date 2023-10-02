@@ -1,0 +1,181 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"SQL_PrivateEndpoints_Name": {
+			"defaultValue": "",
+			"type": "String"
+		},
+		"SQL_serverName": {
+			"type": "string",
+			"defaultValue": "",
+			"metadata": {
+				"description": "The name of the SQL logical server."
+			}
+		},
+		"SQL_SubNet": {
+			"type": "string",
+			"defaultValue": "",
+			"metadata": {
+				"description": "The name of the SQL logical server Subnet"
+			}
+		},
+		"sqlDBName": {
+			"type": "string",
+			"defaultValue": "",
+			"metadata": {
+				"description": "The name of the SQL logical server."
+			}
+		},
+		"SubscriptionID": {
+			"defaultValue": "",
+			"type": "String"
+		},
+		"Netwrok_RG_Name": {
+			"defaultValue": "",
+			"type": "String"
+		},
+		"Resource_Group_Name": {
+			"defaultValue": "",
+			"type": "String"
+		},
+		"SQL_VNet": {
+			"defaultValue": "",
+			"type": "String"
+		},
+		"location": {
+			"type": "string",
+			"defaultValue": "",
+			"metadata": {
+				"description": "Location, Currently, only East US, East US 2, and West Europe are supported."
+			}
+		},
+		"Environment": {
+			"type": "string",
+			"defaultValue": "",
+			"metadata": {
+				"description": "Environments_name"
+			}
+		},
+		"Application": {
+			"type": "string",
+			"defaultValue": "",
+			"metadata": {
+				"description": "Application_name"
+			}
+		},
+		"Cost_Center": {
+			"type": "string",
+			"defaultValue": "",
+			"metadata": {
+				"description": "Cost_Center_Number"
+			}
+		},
+		"Data_Classification": {
+			"type": "string",
+			"defaultValue": "",
+			"metadata": {
+				"description": "Data_Classification"
+			}
+		},
+		"Portfolio_Group": {
+			"type": "string",
+			"defaultValue": "",
+			"metadata": {
+				"description": "Portfolio_Group"
+			}
+		},
+		"Project_Number": {
+			"type": "string",
+			"defaultValue": "",
+			"metadata": {
+				"description": "Project_Number"
+			}
+		},
+		"Business_Unit": {
+			"type": "string",
+			"defaultValue": "",
+			"metadata": {
+				"description": "Business_Unit"
+			}
+		},
+		"Name": {
+			"type": "string",
+			"defaultValue": "",
+			"metadata": {
+				"description": "Name_Resource_Group"
+			}
+		},
+		"DR_Tier": {
+			"type": "string",
+			"defaultValue": "",
+			"metadata": {
+				"description": "DR_Tier"
+			}
+		},
+		"Role": {
+			"type": "string",
+			"defaultValue": "",
+			"metadata": {
+				"description": "Role"
+			}
+		}
+	},
+	"variables": {},
+	"resources": [{
+			"type": "Microsoft.Network/privateEndpoints",
+			"apiVersion": "2020-05-01",
+			"name": "[parameters('SQL_PrivateEndpoints_Name')]",
+			"location": "[parameters('location')]",
+			"tags": {
+				"Role": "[parameters('Role')]",
+				"Name": "[parameters('Name')]",
+				"Application": "[parameters('Application')]",
+				"Business Unit": "[parameters('Business_Unit')]",
+				"Cost Center": "[parameters('Cost_Center')]",
+				"Data Classification": "[parameters('Data_Classification')]",
+				"DR Tier": "[parameters('DR_Tier')]",
+				"Environment": "[parameters('Environment')]",
+				"Portfolio Group": "[parameters('Portfolio_Group')]",
+				"Project Number": "[parameters('Project_Number')]"
+			},
+			"properties": {
+				"privateLinkServiceConnections": [{
+					"name": "[parameters('SQL_PrivateEndpoints_Name')]",
+					"properties": {
+						"privateLinkServiceId": "[concat('/subscriptions/', parameters('SubscriptionID'), '/resourceGroups/', parameters('Resource_Group_Name'), '/providers/Microsoft.Sql/servers/', parameters('SQL_serverName'))]",
+						"groupIds": [
+							"sqlServer"
+						],
+						"privateLinkServiceConnectionState": {
+							"status": "Approved",
+							"description": "Auto-approved",
+							"actionsRequired": "None"
+						}
+					}
+				}],
+				"manualPrivateLinkServiceConnections": [],
+				"subnet": {
+					"id": "[concat('/subscriptions/', parameters('SubscriptionID'), '/resourceGroups/', parameters('Netwrok_RG_Name'), '/providers/Microsoft.Network/virtualNetworks/', parameters('SQL_VNet'), '/subnets/', parameters('SQL_SubNet'))]"
+				},
+				"customDnsConfigs": []
+			}
+		},
+		{
+			"type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
+			"apiVersion": "2020-05-01",
+			"name": "[concat(parameters('SQL_PrivateEndpoints_Name'), '/default')]",
+			"dependsOn": [
+				"[resourceId('Microsoft.Network/privateEndpoints', parameters('SQL_PrivateEndpoints_Name'))]"
+			],
+			"properties": {
+				"privateDnsZoneConfigs": [{
+					"name": "privatelink-database-windows-net",
+					"properties": {
+						"privateDnsZoneId": "[concat('/subscriptions/', parameters('SubscriptionID'), '/resourceGroups/', parameters('Netwrok_RG_Name'), '/providers/Microsoft.Network/privateDnsZones/privatelink.database.windows.net')]"
+					}
+				}]
+			}
+		}
+	]
+}
