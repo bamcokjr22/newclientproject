@@ -1,0 +1,173 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"AppService_PrivateEndpoints_Name": {
+			"defaultValue": "",
+			"type": "String"
+		},
+		"AppService_Name": {
+			"type": "string",
+			"defaultValue": "",
+			"metadata": {
+				"description": "The name of the AppService."
+			}
+		},
+		"AppService_SubNet": {
+			"type": "string",
+			"defaultValue": "",
+			"metadata": {
+				"description": "The name of the subnet"
+			}
+		},
+		"SubscriptionID": {
+			"defaultValue": "",
+			"type": "String"
+		},
+		"Netwrok_RG_Name": {
+			"defaultValue": "",
+			"type": "String"
+		},
+		"Resource_Group_Name": {
+			"defaultValue": "",
+			"type": "String"
+		},
+		"AppService_VNet": {
+			"defaultValue": "",
+			"type": "String"
+		},
+		"location": {
+			"type": "string",
+			"defaultValue": "",
+			"metadata": {
+				"description": "Location, Currently, only East US, East US 2, and West Europe are supported."
+			}
+		},
+		"Environment": {
+			"type": "string",
+			"defaultValue": "",
+			"metadata": {
+				"description": "Environments_name"
+			}
+		},
+		"Application": {
+			"type": "string",
+			"defaultValue": "",
+			"metadata": {
+				"description": "Application_name"
+			}
+		},
+		"Cost_Center": {
+			"type": "string",
+			"defaultValue": "",
+			"metadata": {
+				"description": "Cost_Center_Number"
+			}
+		},
+		"Data_Classification": {
+			"type": "string",
+			"defaultValue": "",
+			"metadata": {
+				"description": "Data_Classification"
+			}
+		},
+		"Portfolio_Group": {
+			"type": "string",
+			"defaultValue": "",
+			"metadata": {
+				"description": "Portfolio_Group"
+			}
+		},
+		"Project_Number": {
+			"type": "string",
+			"defaultValue": "",
+			"metadata": {
+				"description": "Project_Number"
+			}
+		},
+		"Business_Unit": {
+			"type": "string",
+			"defaultValue": "",
+			"metadata": {
+				"description": "Business_Unit"
+			}
+		},
+		"Name": {
+			"type": "string",
+			"defaultValue": "",
+			"metadata": {
+				"description": "Name_Resource_Group"
+			}
+		},
+		"DR_Tier": {
+			"type": "string",
+			"defaultValue": "",
+			"metadata": {
+				"description": "DR_Tier"
+			}
+		},
+		"Role": {
+			"type": "string",
+			"defaultValue": "",
+			"metadata": {
+				"description": "Role"
+			}
+		}
+	},
+	"variables": {},
+	"resources": [{
+			"type": "Microsoft.Network/privateEndpoints",
+			"apiVersion": "2020-11-01",
+			"name": "[parameters('AppService_PrivateEndpoints_Name')]",
+			"location": "[parameters('location')]",
+			"tags": {
+				"Role": "[parameters('Role')]",
+				"Name": "[parameters('Name')]",
+				"Application": "[parameters('Application')]",
+				"Business Unit": "[parameters('Business_Unit')]",
+				"Cost Center": "[parameters('Cost_Center')]",
+				"Data Classification": "[parameters('Data_Classification')]",
+				"DR Tier": "[parameters('DR_Tier')]",
+				"Environment": "[parameters('Environment')]",
+				"Portfolio Group": "[parameters('Portfolio_Group')]",
+				"Project Number": "[parameters('Project_Number')]"
+			},
+			"properties": {
+				"privateLinkServiceConnections": [{
+					"name": "[concat(parameters('AppService_PrivateEndpoints_Name'), '-ad7a')]",
+					"properties": {
+						"privateLinkServiceId": "[concat('/subscriptions/', parameters('SubscriptionID'), '/resourceGroups/', parameters('Resource_Group_Name'), '/providers/Microsoft.Web/sites/', parameters('AppService_Name'))]",
+						"groupIds": [
+							"sites"
+						],
+						"privateLinkServiceConnectionState": {
+							"status": "Approved",
+							"actionsRequired": "None"
+						}
+					}
+				}],
+				"manualPrivateLinkServiceConnections": [],
+				"subnet": {
+					"id": "[concat('/subscriptions/', parameters('SubscriptionID'), '/resourceGroups/', parameters('Netwrok_RG_Name'), '/providers/Microsoft.Network/virtualNetworks/', parameters('AppService_VNet'), '/subnets/', parameters('AppService_SubNet'))]"
+				},
+				"customDnsConfigs": []
+			}
+		},
+		{
+			"type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
+			"apiVersion": "2020-11-01",
+			"name": "[concat(parameters('AppService_PrivateEndpoints_Name'), '/default')]",
+			"dependsOn": [
+				"[resourceId('Microsoft.Network/privateEndpoints', parameters('AppService_PrivateEndpoints_Name'))]"
+			],
+			"properties": {
+				"privateDnsZoneConfigs": [{
+					"name": "privatelink-azurewebsites-net",
+					"properties": {
+						"privateDnsZoneId": "[concat('/subscriptions/', parameters('SubscriptionID'), '/resourceGroups/', parameters('Netwrok_RG_Name'), '/providers/Microsoft.Network/privateDnsZones/privatelink.azurewebsites.net')]"
+					}
+				}]
+			}
+		}
+	]
+}
