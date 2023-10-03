@@ -1,7 +1,7 @@
 metadata name = 'App Service Module'
 metadata description = 'The Module used to create App Service and App Insights'
 
-@sys.description('App Service Name')
+@description('App Service Name')
 param Application_Name string
 @description('Location of App Service and App Insights')
 param location string
