@@ -157,6 +157,16 @@ module appservicepe 'modules/privateendpoint/privateendpoint.bicep' = {
     subnetName: vnet.outputs.subnets[1].subnetName
     peserviceId: appservice.outputs.appserviceId
     groupId: 'sites'
+    Application:
+    Business_Unit:
+    Cost_Center_App_Services:
+    Data_Classification:
+    DR_Tier:
+    Environment:
+    Name_App_Services:
+    Portfolio_Group:
+    Project_Number:
+    Role_App_Services:
   }
 }
 
