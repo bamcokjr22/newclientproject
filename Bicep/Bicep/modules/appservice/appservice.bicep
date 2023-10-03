@@ -25,6 +25,16 @@ param Application_Insights_Request_Source string
 param Application_Insights_public_Network_Access_For_Ingestion string
 @description('Application Insight Public Network Access For Query')
 param Application_Insights_public_Network_Access_For_Query string
+param Environment string
+param Application string
+param Cost_Center_App_Services string
+param Data_Classification string
+param Portfolio_Group string
+param Project_Number string
+param Business_Unit string
+param Name_App_Services string
+param DR_Tier string
+param Role_App_Services string
 
 resource appservice 'Microsoft.Web/sites@2022-09-01' = {
   name: Application_Name
@@ -38,7 +48,18 @@ resource appservice 'Microsoft.Web/sites@2022-09-01' = {
     }
     vnetRouteAllEnabled: vnetRouteAllEnabled
   }
-  tags: {}
+  tags: {
+    Role: Role_App_Services
+		Name: Name_App_Services
+		Application: Application
+		Business_Unit: Business_Unit
+		Cost_Center: Cost_Center_App_Services
+		Data_Classification: Data_Classification
+		DR_Tier: DR_Tier
+		Environment: Environment
+		Portfolio_Group: Portfolio_Group
+		Project_Number: Project_Number
+  }
 }
 
 resource appinsight 'Microsoft.Insights/components@2020-02-02' = {
@@ -53,7 +74,18 @@ resource appinsight 'Microsoft.Insights/components@2020-02-02' = {
     publicNetworkAccessForIngestion: Application_Insights_public_Network_Access_For_Ingestion
     publicNetworkAccessForQuery: Application_Insights_public_Network_Access_For_Query
   }
-  tags: {}
+  tags: {
+    Role: Role_App_Services
+		Name: Name_App_Services
+		Application: Application
+		Business_Unit: Business_Unit
+		Cost_Center: Cost_Center_App_Services
+		Data_Classification: Data_Classification
+		DR_Tier: DR_Tier
+		Environment: Environment
+		Portfolio_Group: Portfolio_Group
+		Project_Number: Project_Number
+  }
 }
 
 resource appserviceLogging 'Microsoft.Web/sites/config@2022-09-01' = {
