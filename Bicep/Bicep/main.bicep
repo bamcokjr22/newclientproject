@@ -7,6 +7,20 @@ resource rg 'Microsoft.Resources/resourceGroups@2023-07-01' = {
   location: location
 }
 
+resource existingRG 'Microsoft.Resources/resourceGroups@2023-07-01' existing = {
+  name: 'Ansible-RG'
+}
+
+resource virtualnetwork 'Microsoft.Network/virtualNetworks@2023-05-01' existing = {
+  scope: existingRG
+  name: vnetName
+}
+
+resource existingSubnet 'Microsoft.Network/virtualNetworks/subnets@2023-05-01' existing = [ for subnet in subnets : {
+  parent: virtualnetwork
+  name: subnet
+}]
+
 module userAssignedIdentity 'modules/managedidentity/managedidentity.bicep' = {
   scope: rg
   name: 'uctestpoc'
