@@ -64,6 +64,16 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' = if (ena
   kind: storageAccounKind
 }
 
+resource storageAccountBlob 'Microsoft.Storage/storageAccounts/blobServices@2023-01-01' = {
+  parent: storageAccount
+  name: 'default'
+}
+
+resource storageAccountBlobContainer 'Microsoft.Storage/storageAccounts/blobServices/containers@2023-01-01' = {
+  parent: storageAccountBlob
+  name: 'vulnerability-assessment'
+}
+
 resource storageAccountRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = if(useVAManagedIdentity) {
   name: 'sqlvaroleassignment'
   scope: storageAccount
