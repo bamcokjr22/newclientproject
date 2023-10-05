@@ -214,3 +214,33 @@ module keyvaultpe 'modules/privateendpoint/privateendpoint.bicep' = {
     groupId: 'vault'
   }
 }
+
+
+module sql 'modules/sql/sql.bicep' = {
+  scope: rg
+  name: 'sql'
+  params: {
+    adminPassword: 
+    adminUsername: 'serveradmin'
+    azureADLoginName: 'akstflearn admins'
+    azureADOnlyAuthentication: false
+    identityType: 'SystemAssigned'
+    location: location
+    principalType: 'Group' 
+    sqlDBName: 'ucdb'
+    sqlPublicNetworkAccess: 'Enabled'
+    sqlServerName: 'ucsqlsrv'
+    sqlSID: 'c2535c34-5078-4552-b708-45d6c8167951'
+    tenantId: tenant().tenantId 
+    sqlEndIpAddress: '255.255.255.255'
+    sqlStartIpAddress: '0.0.0.0'
+    storageAccountName: storageaccount.name
+    storageAccounKind: 'StorageV2'
+    storgaeAccountSkuName: 'Standard_LRS'
+    sqlDBSkuFamily: 'Gen5'
+    sqlDBSkuName: 'GP_S_Gen5'
+    sqlDBSkuTier: 'GeneralPurpose'
+    sqlDBSkuCapacity: 1
+    princapalId: userAssignedIdentity.outputs.mangedidentityClientId
+  }
+}
