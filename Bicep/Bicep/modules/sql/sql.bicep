@@ -55,6 +55,10 @@ param storageAccounKind string
 @description('Principal ID for SQL VA storage Account')
 param princapalId string
 
+
+param subnetId string
+param sqlVnetRuleName string
+
 resource storageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' = if (enableVA) {
   name: storageAccountName
   location: location
@@ -62,14 +66,28 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' = if (ena
     name: storgaeAccountSkuName
   }
   kind: storageAccounKind
+  properties: {
+    publicNetworkAccess: 'Enabled'
+    networkAcls: {
+      defaultAction: 'Deny'
+      bypass: 'AzureServices'
+      virtualNetworkRules: [
+        {
+          action: 'Allow'
+          id: subnetId
+          state: 'Succeeded'
+        }
+      ]
+    }
+  }
 }
 
-resource storageAccountBlob 'Microsoft.Storage/storageAccounts/blobServices@2023-01-01' = {
+resource storageAccountBlob 'Microsoft.Storage/storageAccounts/blobServices@2023-01-01' = if (enableVA) {
   parent: storageAccount
   name: 'default'
 }
 
-resource storageAccountBlobContainer 'Microsoft.Storage/storageAccounts/blobServices/containers@2023-01-01' = {
+resource storageAccountBlobContainer 'Microsoft.Storage/storageAccounts/blobServices/containers@2023-01-01' = if(enableVA) {
   parent: storageAccountBlob
   name: 'vulnerability-assessment'
 }
@@ -79,7 +97,7 @@ resource storageAccountRoleAssignment 'Microsoft.Authorization/roleAssignments@2
   scope: storageAccount
   properties: {
     principalId: princapalId
-    roleDefinitionId: 'ba92f5b4-2d11-453d-a403-e96b0029c9fe'
+    roleDefinitionId: ''
     principalType: 'ServicePrincipal'
   }
 }
@@ -94,6 +112,7 @@ resource sql 'Microsoft.Sql/servers@2021-11-01' = {
   properties: {
     administratorLogin: adminUsername
     administratorLoginPassword: adminPassword
+    version: '12.0'
     administrators: {
       administratorType: 'ActiveDirectory'
       azureADOnlyAuthentication: azureADOnlyAuthentication
@@ -106,6 +125,15 @@ resource sql 'Microsoft.Sql/servers@2021-11-01' = {
     minimalTlsVersion: '1.2'
   }
   tags: {}
+}
+
+resource sqlVnetRule 'Microsoft.Sql/servers/virtualNetworkRules@2021-11-01' = {
+  parent: sql
+  name: sqlVnetRuleName
+  properties: {
+    virtualNetworkSubnetId: subnetId
+    ignoreMissingVnetServiceEndpoint: false 
+  }
 }
 
 resource sqlFirewall 'Microsoft.Sql/servers/firewallRules@2021-11-01' = if (allowAzureIps) {
@@ -153,7 +181,7 @@ resource sqlVA 'Microsoft.Sql/servers/vulnerabilityAssessments@2021-11-01' = if 
   name: 'default'
   dependsOn: [sqlSecurityAlertPolicies]
   properties: {
-    storageContainerPath: enableVA ? storageAccountName : ''
+    storageContainerPath: enableVA ? 'https://${storageAccount.name}.blob.core.windows.net/${storageAccountBlobContainer.name}' : ''
     storageAccountAccessKey: ((enableVA) && !(useVAManagedIdentity)) ? storageAccount.listKeys().keys[0].value : ''
     recurringScans: {
       isEnabled: true
@@ -164,7 +192,7 @@ resource sqlVA 'Microsoft.Sql/servers/vulnerabilityAssessments@2021-11-01' = if 
 
 resource sqlDB 'Microsoft.Sql/servers/databases@2021-11-01' = {
   parent: sql
-  name: sqlDBName
+  name: toLower(replace(sqlDBName, '-', ''))
   location: location
   sku: {
     name: sqlDBSkuName
@@ -179,8 +207,8 @@ resource sqlDB 'Microsoft.Sql/servers/databases@2021-11-01' = {
     zoneRedundant: false
     readScale: 'Disabled'
     autoPauseDelay: 60
-    minCapacity: 5/10
-    secondaryType: 'GRS'
+    minCapacity: 1
+    secondaryType: 'Geo'
   }
 }
 
