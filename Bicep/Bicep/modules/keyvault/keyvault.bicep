@@ -21,6 +21,7 @@ param secretPermissions array
 param storagePermissions array
 @description('Enable or Disable Public Network Access')
 param publicNetworkAccess string
+param subnetId string
 
 @description('keyvault SKU Family')
 var skuFamily = 'A'
