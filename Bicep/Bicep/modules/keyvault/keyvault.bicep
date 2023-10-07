@@ -42,6 +42,16 @@ resource keyvault 'Microsoft.KeyVault/vaults@2023-02-01' = {
       }
     ]
     publicNetworkAccess: publicNetworkAccess
+    networkAcls: {
+      defaultAction: 'Deny'
+      bypass: 'AzureServices'
+      virtualNetworkRules: [
+        {
+          ignoreMissingVnetServiceEndpoint: false
+          id: subnetId
+        }
+      ]
+    }
     sku: {
       family: skuFamily
       name: skuName
